@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import ProjectForm from "@/components/projects/ProjectForm"
 import type { ProjectFormData } from "@/types/index"
 import { createProject } from "@/api/ProjectApi"
+import { toast } from "react-toastify"
 
 const CreateProjectView = () => {
 
@@ -14,8 +15,9 @@ const CreateProjectView = () => {
   }
   const { register, handleSubmit, formState: { errors } } = useForm({ defaultValues: initialValues })
 
-  const handleForm = async (data : ProjectFormData) => {
-    await createProject(data)
+  const handleForm = async (formData : ProjectFormData) => {
+    const data = await createProject(formData)
+    toast.success('Proyecto Creado')
     navigate('/projects')
   }
 

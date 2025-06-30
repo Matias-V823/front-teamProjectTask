@@ -1,5 +1,7 @@
 import NavMenu from "@/components/NavMenu"
 import { Outlet } from "react-router"
+import { ToastContainer } from "react-toastify"
+import 'react-toastify/dist/ReactToastify.css'
 
 const AppLayout = () => {
     return (
@@ -17,6 +19,10 @@ const AppLayout = () => {
             <section className="max-w-screen-2xl mx-auto mt-10 p-5">
                 <Outlet />
             </section>
+            <ToastContainer
+                pauseOnHover={false}
+                pauseOnFocusLoss={false}
+            />
         </>
     )
 }
