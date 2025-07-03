@@ -4,6 +4,8 @@ import { EllipsisVerticalIcon } from '@heroicons/react/20/solid'
 import { Link } from "react-router"
 import { useQuery } from "@tanstack/react-query"
 import { getProjects } from "@/api/ProjectApi"
+import { FaProjectDiagram } from 'react-icons/fa'
+import { FiFolder } from 'react-icons/fi'
 
 const DashboardView = () => {
 
@@ -18,7 +20,9 @@ const DashboardView = () => {
 
   return (
     <>
-      <h1 className="text-5xl text-gray-50 font-bold">Mis projectos</h1>
+      <h1 className="text-5xl text-gray-50 font-bold">
+        Mis projectos <FaProjectDiagram className='inline-block w-8'/> 
+      </h1>
       <p className="text-2xl font-light text-gray-500 mt-3">Maneja y administra tus proyectos</p>
       <nav className="my-5">
         <Link
@@ -28,15 +32,17 @@ const DashboardView = () => {
         </Link>
       </nav>
       {data?.length ? (
-        <ul role="list" className="divide-y divide-gray-100 border border-gray-100 mt-10 bg-gray-900 shadow-lg">
+        <ul role="list" className="divide-y divide-gray-100 border border-gray-100 mt-10 bg-gray-900 shadow-lg rounded-lg">
           {data.map((project) => (
             <li key={project._id} className="flex justify-between gap-x-6 px-5 py-10">
               <div className="flex min-w-0 gap-x-4">
                 <div className="min-w-0 flex-auto space-y-2">
                   <Link to={``}
-                    className="text-gray-600 cursor-pointer hover:underline text-3xl font-bold"
-                  >{project.projectName}</Link>
-                  <p className="text-sm text-gray-400">
+                    className="text-gray-200 cursor-pointer hover:underline text-3xl font-bold"
+                  >
+                    <FiFolder className="text-sky-400 inline-block mr-2"/>
+                    {project.projectName}</Link>
+                  <p className="text-sm text-gray-400 mt-2">
                     Cliente: {project.clientName}
                   </p>
                   <p className="text-sm text-gray-400">
