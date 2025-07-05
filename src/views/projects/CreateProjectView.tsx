@@ -37,7 +37,7 @@ const CreateProjectView = () => {
       <nav className="my-5">
         <Link
           to='/projects/'
-          className="bg-sky-50 px-5 py-2 rounded-lg cursor-pointer">
+          className="bg-gray-50! hover:bg-gray-300! text-gray-900! buttonActions">
           Volver atras
         </Link>
       </nav>
