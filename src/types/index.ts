@@ -1,6 +1,25 @@
 import { z } from 'zod'
 
 
+/* Tasks */
+
+export type TaskStatus = "pending" | "onHold" | "inProgress" | "underReview" | "completed"
+export type PriorityKey = 'high' | 'medium' | 'low'
+
+export const taskStatusSchema = z.enum(["pending", "onHold", "inProgress", "underReview", "completed"])
+
+export const taskSchema = z.object({
+    _id: z.string(),
+    name: z.string(),
+    description: z.string(),
+    project: z.string(),
+    status: taskStatusSchema,
+    createdAt: z.date()
+})
+
+export type Task = z.infer<typeof taskSchema>
+export type TaskFormData = Pick<Task, 'name' | 'description'>
+
 /* Projects */
 export const projectSchema = z.object({
     _id: z.string(),

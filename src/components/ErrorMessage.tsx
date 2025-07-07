@@ -1,6 +1,6 @@
 const ErrorMessage = ({children} : {children: React.ReactNode}) => {
   return (
-    <div className="text-center my-4 text-red-500 font-bold p-2 uppercase text-sm">
+    <div className="text-center my-2 text-red-500 font-bold text-sm">
         {children}
     </div>
   )
