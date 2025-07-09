@@ -19,36 +19,36 @@ export default function NavMenu() {
         leaveFrom="opacity-100 translate-y-0"
         leaveTo="opacity-0 translate-y-1"
       >
-        <Popover.Panel className="absolute right-0 z-30 mt-2 w-56 origin-top-right rounded-xl bg-gray-800 border border-gray-700 shadow-xl">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium text-indigo-400">Hola: Usuario</p>
+        <Popover.Panel className="absolute right-0 z-30 mt-2 w-48 origin-top-right rounded-lg bg-gray-800 border border-gray-700 shadow-xl">
+          <div className="p-2">
+            <div className="flex items-center justify-between mb-2 px-2 py-1">
+              <p className="text-xs font-medium text-indigo-400">Hola: Usuario</p>
               <Popover.Button className="p-1 rounded-md hover:bg-gray-700">
-                <XMarkIcon className="w-5 h-5 text-gray-400" />
+                <XMarkIcon className="w-4 h-4 text-gray-400" />
               </Popover.Button>
             </div>
             
-            <div className="space-y-2 border-t border-gray-700 pt-2">
+            <div className="space-y-1 border-t border-gray-700 pt-1">
               <Link
                 to='/'
-                className='block px-3 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors'
+                className='block px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded transition-colors'
               >
                 Inicio
               </Link>
               <Link
                 to='/profile'
-                className='block px-3 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors'
+                className='block px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded transition-colors'
               >
                 Mi Perfil
               </Link>
               <Link
                 to='/projects'
-                className='block px-3 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors'
+                className='block px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-700 hover:text-white rounded transition-colors'
               >
                 Mis Proyectos
               </Link>
               <button
-                className='block w-full text-left px-3 py-2 text-rose-400 hover:bg-gray-700 hover:text-rose-300 rounded-md transition-colors'
+                className='block w-full text-left px-2 py-1.5 text-sm text-rose-400 hover:bg-gray-700 hover:text-rose-300 rounded transition-colors'
                 type='button'
                 onClick={() => { }}
               >
