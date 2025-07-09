@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { deleteTask } from '@/api/TaskApi'
 import { toast } from 'react-toastify'
 import { statusTranslation } from '@/locales/es'
+import Timer from '../Timer'
 
 type TaskListProps = {
     tasks: Task[]
@@ -220,22 +221,7 @@ const TaskList = ({ tasks }: TaskListProps) => {
                         <p className="text-gray-400 capitalize">{today}</p>
                     </div>
 
-                    <div className="mb-8 bg-gray-800/50 p-4 rounded-lg border border-gray-700">
-                        <div className="text-center">
-                            <div className="text-5xl font-mono font-bold text-emerald-400 mb-3">25:00</div>
-                            <div className="flex justify-center space-x-3">
-                                <button className="px-4 py-2 bg-emerald-800/50 text-emerald-300 rounded-md hover:bg-emerald-700/50 transition-colors">
-                                    Iniciar
-                                </button>
-                                <button className="px-4 py-2 bg-gray-700 text-gray-300 rounded-md hover:bg-gray-600 transition-colors">
-                                    Pausar
-                                </button>
-                                <button className="px-4 py-2 bg-rose-900/50 text-rose-300 rounded-md hover:bg-rose-800/50 transition-colors">
-                                    Reiniciar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <Timer/>
 
                     <div>
                         <h3 className="font-medium text-gray-300 mb-3 flex items-center">
