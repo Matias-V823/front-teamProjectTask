@@ -6,7 +6,7 @@ import AddTaskModal from "@/components/tasks/AddTaskModal";
 import TaskList from "@/components/tasks/TaskList";
 import EditTaskData from "@/components/tasks/EditTaskData";
 import ViewTaskModal from "@/components/tasks/ViewTaskModal";
-import { FiArrowLeft } from "react-icons/fi";
+import { FiArrowLeft, FiPlusCircle } from "react-icons/fi";
 
 
 const ProjectDetailsView = () => {
@@ -43,6 +43,7 @@ const ProjectDetailsView = () => {
                         className="buttonActions"
                         onClick={() => navigate('?newTask=true')}
                     >
+                        <FiPlusCircle className="w-5 h-5" />
                         Agregar tareas
                     </button>
 

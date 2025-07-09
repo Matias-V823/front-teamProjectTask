@@ -5,5 +5,5 @@ body{
 }
 
 .buttonActions {
-    @apply bg-sky-600 hover:bg-sky-700  transition-colors px-5 py-3 text-gray-50 text-sm  rounded-lg font-bold cursor-pointer
+    @apply flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors shadow-lg hover:shadow-indigo-500/20
 }
