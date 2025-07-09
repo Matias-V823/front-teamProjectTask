@@ -1,11 +1,12 @@
 import api from "@/lib/axios";
 import { isAxiosError } from "axios";
-import type { Project, Task, TaskFormData } from "../types";
+import { taskSchema, type Project, type Task, type TaskFormData } from "../types";
 
 type TaskApiType = {
     projectId: Project['_id']
     formData: TaskFormData
     taskId: Task['_id']
+    status: Task['status']
 }
 
 
@@ -21,8 +22,11 @@ export async function createTask({ formData, projectId }: Pick<TaskApiType, 'for
 }
 export async function getTaskById({ projectId, taskId }: Pick<TaskApiType,  'projectId' | 'taskId'  >) {
     try {
-        const { data } = await api.get<string>(`/projects/${projectId}/tasks/${taskId}`)
-        return data
+        const { data } = await api<string>(`/projects/${projectId}/tasks/${taskId}`)
+        const response = taskSchema.safeParse(data)
+        if(response){
+            return response.data
+        }
     } catch (error) {
         if (isAxiosError(error) && error.response) {
             throw new Error(error.response.data.error)
@@ -39,3 +43,27 @@ export async function updateTask({ projectId, taskId, formData }: Pick<TaskApiTy
         }
     }
 }
+
+export async function deleteTask({ projectId, taskId }: Pick<TaskApiType,  'projectId' | 'taskId'  >) {
+    try {
+        const { data } = await api.delete<string>(`/projects/${projectId}/tasks/${taskId}`)
+        return data
+    } catch (error) {
+        if (isAxiosError(error) && error.response) {
+            throw new Error(error.response.data.error)
+        }
+    }
+}
+
+
+export async function updateStatus({ status, projectId, taskId }: Pick<TaskApiType, 'status' | 'projectId'| 'taskId' >) {
+    try {
+        const { data } = await api.post<string>(`/projects/${projectId}/tasks/${taskId}/status`, {status})
+        return data
+    } catch (error) {
+        if (isAxiosError(error) && error.response) {
+            throw new Error(error.response.data.error)
+        }
+    }
+}
+

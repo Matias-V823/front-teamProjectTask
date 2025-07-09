@@ -3,7 +3,11 @@ import { Menu, Transition } from '@headlessui/react'
 import type { Task } from "@/types/index"
 import { useState } from "react"
 import { FiMoreVertical } from 'react-icons/fi'
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { deleteTask } from '@/api/TaskApi'
+import { toast } from 'react-toastify'
+import { statusTranslation } from '@/locales/es'
 
 type TaskListProps = {
     tasks: Task[]
@@ -14,15 +18,9 @@ type GroupedTasks = {
     [key: string]: Task[]
 }
 
-const statusDisplayNames: { [key: string]: string } = {
-    pending: "📝 Pendientes",
-    onHold: "🔄 En espera",
-    inProgress: "🚀 En progreso",
-    underReview: "🔍 En revisión",
-    completed: "✅ Completadas"
-};
 
-const statusColors: { [key: string]: string } = {
+
+export const statusColors: { [key: string]: string } = {
     pending: "bg-yellow-900/30 text-yellow-400 border-yellow-800/50",
     onHold: "bg-blue-900/30 text-blue-400 border-blue-800/50",
     inProgress: "bg-purple-900/30 text-purple-400 border-purple-800/50",
@@ -46,10 +44,30 @@ const initialStatusGroups: GroupedTasks = {
 
 const TaskList = ({ tasks }: TaskListProps) => {
     const navigate = useNavigate()
+    const params = useParams()
+    const projectId = params.projectId!
 
     const [todayTasks, setTodayTasks] = useState<Task[]>([])
     const date = new Date()
     const today = date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
+
+
+    const queryClient = useQueryClient()
+    const { mutate, reset } = useMutation({
+        mutationFn: deleteTask,
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['project', { projectId }] })
+            reset()
+            toast.success(data, {
+                theme: 'dark',
+                position: 'top-right'
+            })
+        },
+        onError: (error) => {
+            toast.error(error.message)
+        }
+    })
+
 
     const groupedTasks = tasks.reduce((acc, task) => {
         const currentGroup = acc[task.status] ? [...acc[task.status]] : []
@@ -64,6 +82,15 @@ const TaskList = ({ tasks }: TaskListProps) => {
 
     const handleRemoveFromToday = (taskId: string) => {
         setTodayTasks(todayTasks.filter(task => task._id !== taskId))
+    }
+
+
+    const handleDeleteTask = (taskId: Task['_id']) => {
+        const data = {
+            projectId,
+            taskId
+        }
+        mutate(data)
     }
 
     return (
@@ -82,7 +109,7 @@ const TaskList = ({ tasks }: TaskListProps) => {
                         {Object.entries(groupedTasks).map(([status, tasks]) => (
                             <div key={status} className="bg-gray-900 rounded-lg shadow-lg  border border-gray-800">
                                 <div className={`p-3 ${statusColors[status]} border-b border-gray-800`}>
-                                    <h3 className="font-medium">{statusDisplayNames[status]}</h3>
+                                    <h3 className="font-medium">{statusTranslation[status]}</h3>
                                     <span className="text-xs font-semibold">{tasks.length} tareas</span>
                                 </div>
 
@@ -126,6 +153,8 @@ const TaskList = ({ tasks }: TaskListProps) => {
                                                                             {({ active }) => (
                                                                                 <button
                                                                                     type="button"
+                                                                                    onClick={() => navigate(`?viewTask=${task._id}`)}
+
                                                                                     className={`${active ? 'bg-gray-700 text-white' : 'text-gray-300'} block w-full px-4 py-2 text-left text-sm`}
                                                                                 >
                                                                                     Ver Tarea
@@ -147,6 +176,7 @@ const TaskList = ({ tasks }: TaskListProps) => {
                                                                             {({ active }) => (
                                                                                 <button
                                                                                     type="button"
+                                                                                    onClick={() => handleDeleteTask(task._id)}
                                                                                     className={`${active ? 'bg-red-900/50 text-red-100' : 'text-red-400'} block w-full px-4 py-2 text-left text-sm`}
                                                                                 >
                                                                                     Eliminar Tarea
