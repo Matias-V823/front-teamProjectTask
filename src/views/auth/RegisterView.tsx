@@ -2,6 +2,9 @@ import { useForm } from "react-hook-form";
 import type { UserRegistrationForm } from "@/types/index";
 import ErrorMessage from "@/components/ErrorMessage";
 import { Link } from "react-router";
+import { useMutation } from "@tanstack/react-query";
+import { createAccount } from "@/api/AuthApi";
+import { toast } from "react-toastify";
 
 export default function RegisterView() {
   const initialValues: UserRegistrationForm = {
@@ -15,17 +18,33 @@ export default function RegisterView() {
 
   const password = watch('password');
 
-  const handleRegister = (formData: UserRegistrationForm) => {}
+
+  const { mutate } = useMutation({
+    mutationFn: createAccount,
+    onSuccess: (data) => {
+      toast.success(data?.message)
+      reset()
+    },
+    onError: (error) => {
+      toast.error(error.message)
+    }
+  })
+
+
+
+
+  const handleRegister = (formData: UserRegistrationForm) => mutate(formData)
+
 
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-      <div className="w-full max-w-4xl"> 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 min-h-[600px]"> 
+      <div className="w-full max-w-4xl">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 min-h-[600px]">
           <div className="flex flex-col h-full">
             <div className="bg-gray-900/90 h-full flex items-center justify-center rounded-l-lg border border-gray-800 border-r-0">
-              <img 
-                src="/img/ilustration.png" 
-                alt="Registro" 
+              <img
+                src="/img/ilustration.png"
+                alt="Registro"
                 className="w-full min-h-full object-cover rounded-l-lg"
               />
             </div>
@@ -40,7 +59,7 @@ export default function RegisterView() {
                         <h1 className="text-2xl font-bold text-gray-100 ">Crea tu cuenta</h1>
                         <p className="text-sm text-gray-400">Completa el formulario para comenzar</p>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <label className="block text-sm font-medium text-gray-300" htmlFor="name">
@@ -50,7 +69,7 @@ export default function RegisterView() {
                             id="name"
                             type="text"
                             placeholder="Tu nombre completo"
-                            className="formInputAuth" 
+                            className="formInputAuth"
                             {...register("name", {
                               required: "El Nombre de usuario es obligatorio",
                             })}
@@ -68,7 +87,7 @@ export default function RegisterView() {
                             id="email"
                             type="email"
                             placeholder="tu@email.com"
-                            className="formInputAuth" 
+                            className="formInputAuth"
                             {...register("email", {
                               required: "El Email de registro es obligatorio",
                               pattern: {
@@ -83,16 +102,16 @@ export default function RegisterView() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> 
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <label  htmlFor="password" className="block text-sm font-medium text-gray-300">
+                          <label htmlFor="password" className="block text-sm font-medium text-gray-300">
                             Contraseña
                           </label>
                           <input
                             id="password"
                             type="password"
                             placeholder="Mínimo 8 caracteres"
-                            className="formInputAuth" 
+                            className="formInputAuth"
                             {...register("password", {
                               required: "La contraseña es obligatoria",
                               minLength: {
@@ -114,7 +133,7 @@ export default function RegisterView() {
                             id="password_confirmation"
                             type="password"
                             placeholder="Repite tu contraseña"
-                            className="formInputAuth" 
+                            className="formInputAuth"
                             {...register("password_confirmation", {
                               required: "Repetir contraseña es obligatorio",
                               validate: value => value === password || 'Las contraseñas no coinciden'
@@ -129,7 +148,7 @@ export default function RegisterView() {
                       <div>
                         <button
                           type="submit"
-                          className="w-full py-2 px-6 rounded-lg font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-indigo-500/20 transition-all cursor-pointer" 
+                          className="w-full py-2 px-6 rounded-lg font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-indigo-500/20 transition-all cursor-pointer"
                         >
                           Registrarme
                         </button>
@@ -139,8 +158,8 @@ export default function RegisterView() {
 
                   <div className="mt-4 text-center text-sm text-gray-400">
                     ¿Ya tienes una cuenta?{' '}
-                    <Link 
-                      to="/auth/login" 
+                    <Link
+                      to="/auth/login"
                       className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
                     >
                       Inicia Sesión

@@ -1,4 +1,5 @@
 import { Outlet } from "react-router"
+import { ToastContainer } from "react-toastify"
 
 const AuthLayout = () => {
     return (
@@ -13,6 +14,11 @@ const AuthLayout = () => {
                     </div>
                 </div>
             </div>
+            <ToastContainer
+                pauseOnHover={false}
+                pauseOnFocusLoss={false}
+                theme="dark"
+            />
 
         </>
     )
