@@ -1,9 +1,10 @@
 import { Fragment } from 'react'
 import { Popover, Transition } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/20/solid'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 
 export default function NavMenu() {
+  const navigate = useNavigate()
   return (
     <Popover className="relative">
       <Popover.Button className="inline-flex items-center justify-center p-2 rounded-lg border border-gray-800 hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -50,7 +51,7 @@ export default function NavMenu() {
               <button
                 className='block w-full text-left px-2 py-1.5 text-sm text-rose-400 hover:bg-gray-700 hover:text-rose-300 rounded transition-colors'
                 type='button'
-                onClick={() => { }}
+                onClick={() => navigate('/auth/login')}
               >
                 Cerrar Sesión
               </button>

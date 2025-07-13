@@ -10,7 +10,7 @@ const AppLayout = () => {
                 <div className="max-w-2xl mx-auto border-[0.5px] h-[60px] rounded-2xl border-gray-700 shadow-xl backdrop-blur-3xl">
                     <div className="h-full p-0 flex flex-col items-center lg:flex-row lg:justify-between gap-4 bg-gradient-to-r from-indigo-900/20 via-purple-900/20 to-gray-900/20 rounded-2xl">
                         <Link to='/' className="h-full flex items-center px-4 group">
-                            <h2 className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-400 font-bold text-lg tracking-tighter group-hover:from-indigo-200 group-hover:to-purple-300 transition-all duration-300">
+                            <h2 className="logo text-lg">
                                 taskProjectTeam
                             </h2>
                         </Link>
