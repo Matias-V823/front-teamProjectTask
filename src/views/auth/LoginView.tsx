@@ -1,9 +1,13 @@
 import { useForm } from "react-hook-form";
 import ErrorMessage from "@/components/ErrorMessage";
 import type { UserLoginForm } from "@/types/index";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { useMutation } from "@tanstack/react-query";
+import { login } from "@/api/AuthApi";
+import { toast } from 'react-toastify'
 
 export default function LoginView() {
+    const navigate = useNavigate()
     const initialValues: UserLoginForm = {
         email: '',
         password: '',
@@ -13,8 +17,20 @@ export default function LoginView() {
         defaultValues: initialValues
     });
 
+    const { mutate, reset } = useMutation({
+        mutationFn: login,
+        onSuccess: (data) => {
+            toast.success(data.message)
+            reset()
+            navigate('/')
+        },
+        onError: (error) => {
+            toast.error(error.message)
+        }
+    })
+
     const handleLogin = (formData: UserLoginForm) => {
-        console.log(formData);
+        mutate(formData);
     };
 
     return (
@@ -36,7 +52,7 @@ export default function LoginView() {
                                     <div className="space-y-2">
                                         <label
                                             htmlFor="email"
-                                            className="block text-sm font-medium text-gray-300"
+                                            className="formLabelAuth"
                                         >
                                             Correo Electrónico
                                         </label>
@@ -62,7 +78,7 @@ export default function LoginView() {
                                     <div className="space-y-2">
                                         <label
                                             htmlFor="password"
-                                            className="block text-sm font-medium text-gray-300"
+                                            className="formLabelAuth"
                                         >
                                             Contraseña
                                         </label>
@@ -96,7 +112,7 @@ export default function LoginView() {
 
                                         <div className="text-sm">
                                             <Link
-                                                to="/forgot-password"
+                                                to="/auth/forgot-password"
                                                 className="font-medium text-indigo-400 hover:text-indigo-300"
                                             >
                                                 ¿Olvidaste tu contraseña?

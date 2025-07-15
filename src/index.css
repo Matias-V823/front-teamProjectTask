@@ -5,6 +5,10 @@ body{
 }
 
 
+.formLabelAuth{
+    @apply block text-sm font-medium text-gray-300
+}
+
 .formInputAuth{
     @apply w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors text-sm placeholder-gray-500
 }

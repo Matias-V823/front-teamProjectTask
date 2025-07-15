@@ -62,7 +62,7 @@ export default function RegisterView() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <label className="block text-sm font-medium text-gray-300" htmlFor="name">
+                          <label className="formLabelAuth" htmlFor="name">
                             Nombre
                           </label>
                           <input
@@ -80,7 +80,7 @@ export default function RegisterView() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="block text-sm font-medium text-gray-300" htmlFor="email">
+                          <label className="formLabelAuth" htmlFor="email">
                             Email
                           </label>
                           <input
@@ -104,7 +104,7 @@ export default function RegisterView() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <label htmlFor="password" className="block text-sm font-medium text-gray-300">
+                          <label htmlFor="password" className="formLabelAuth">
                             Contraseña
                           </label>
                           <input
@@ -126,7 +126,7 @@ export default function RegisterView() {
                         </div>
 
                         <div className="space-y-2">
-                          <label htmlFor="password_confirmation" className="block text-sm font-medium text-gray-300">
+                          <label htmlFor="password_confirmation" className="formLabelAuth">
                             Repetir Contraseña
                           </label>
                           <input
