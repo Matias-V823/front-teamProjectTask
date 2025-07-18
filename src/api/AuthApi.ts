@@ -9,11 +9,11 @@ export type CreateAccountResponse = {
 
 
 
-export async function login(formData: UserLoginForm): Promise<CreateAccountResponse> {
+export async function login(formData: UserLoginForm) {
     try {
         const url = "http://localhost:4000/api/auth/login"
-        const { data } = await api.post<CreateAccountResponse>(url, formData)
-        console.log(data)
+        const { data } = await api.post<string>(url, formData)
+        localStorage.setItem('AUTH_TOKEN', data)
         return data
     } catch (error) {
         if (isAxiosError(error) && error.response) {
