@@ -27,7 +27,7 @@ export default function LoginView() {
             toast.error(error.message)
         }
     })
-
+    
     const handleLogin = (formData: UserLoginForm) => {
         mutate(formData);
     };
