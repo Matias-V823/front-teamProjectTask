@@ -25,29 +25,59 @@ const ProjectDetailsView = () => {
 
     return (
         <>
-            <div className="px-10">
-                <div className="flex items-center gap-4 mb-6">
-                    <Link
-                        to="/projects"
-                        className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors"
-                    >
-                        <FiArrowLeft className="w-5 h-5" />
-                        <span className="font-medium">Volver a proyectos</span>
-                    </Link>
+            <div className="px-10 flex justify-between items-center">
+                <div className="flex flex-col">
+                    <div className="flex items-center gap-4 mb-6">
+                        <Link
+                            to="/projects"
+                            className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors"
+                        >
+                            <FiArrowLeft className="w-5 h-5" />
+                            <span className="font-medium">Volver a proyectos</span>
+                        </Link>
+                    </div>
+                    <div>
+                        <h1 className="text-gray-100 text-5xl  font-extrabold">{data.projectName} <FaCode className="inline-block" /></h1>
+                        <p className="text-gray-500 mt-2 text-2xl font-light">{data.description}</p>
+                    </div>
                 </div>
-                <h1 className="text-gray-100 text-5xl  font-extrabold">{data.projectName} <FaCode className="inline-block" /></h1>
-                <p className="text-gray-500 mt-2 text-2xl font-light">{data.description}</p>
-                <nav className="my-5 flex gap-3">
+                <nav className="my-2 flex gap-2 p-1 h-14">
                     <button
                         type="button"
                         className="buttonActions"
-                        onClick={() => navigate('?newTask=true')}
+                        onClick={() => navigate('backlog')}
                     >
-                        <FiPlusCircle className="w-5 h-5" />
-                        Agregar tareas
+                        <FiPlusCircle className="w-3 h-3" />
+                        Product Backlog
                     </button>
-
+                    <button
+                        type="button"
+                        className="buttonActions"
+                        onClick={() => navigate('sprint-backlog')}
+                    >
+                        <FiPlusCircle className="w-3 h-3" />
+                        Sprint Backlog
+                    </button>
+                    <button
+                        type="button"
+                        className="buttonActions"
+                        onClick={() => navigate('team')}
+                    >
+                        <FiPlusCircle className="w-3 h-3" />
+                        Scrum Team
+                    </button>
+                    <button
+                        type="button"
+                        className="buttonActions"
+                        onClick={() => navigate('/')}
+                    >
+                        <FiPlusCircle className="w-3 h-3" />
+                        Generar con ia
+                    </button>
                 </nav>
+            </div>
+            <div className="text-white text-xl p-10">
+                <h4>Mi sprint 1</h4>
             </div>
             <TaskList
                 tasks={data.tasks}

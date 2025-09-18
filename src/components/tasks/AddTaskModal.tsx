@@ -37,6 +37,7 @@ export default function AddTaskModal() {
         },
         onSuccess: (data)=> {
             queryClient.invalidateQueries({queryKey: ['editProject', {projectId}]})
+            queryClient.invalidateQueries({queryKey: ['project', {projectId}]})
             reset()
             toast.success(data, {
                 theme: 'dark',
