@@ -1,6 +1,6 @@
 import api from '@/lib/axios'
 import { isAxiosError } from 'axios'
-import type { NewPasswordForm, RequestConfirmationCodeForm, UserConfirmationForm, UserLoginForm, UserRegistrationForm, validateTokenPassword } from '../types'
+import { userSchema,  type NewPasswordForm,  type RequestConfirmationCodeForm,  type UserConfirmationForm,  type UserLoginForm,  type UserRegistrationForm,  type validateTokenPassword } from '../types'
 
 
 export type CreateAccountResponse = {
@@ -106,3 +106,20 @@ export async function updatePassword({ formData, token }: updatePasswordType): P
         throw new Error('Error inesperado al ingresar token')
     }
 }
+
+export async function getUser() {
+    try {
+        const url = `http://localhost:4000/api/auth/user`
+        const { data } = await api(url)
+        const response = userSchema.safeParse(data)
+        if(response.success){
+            return response.data
+        }
+    } catch (error) {
+        if (isAxiosError(error) && error.response) {
+            throw new Error(error.response.data.error)
+        }
+    }
+}
+
+

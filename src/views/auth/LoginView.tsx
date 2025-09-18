@@ -21,6 +21,7 @@ export default function LoginView() {
         mutationFn: login,
         onSuccess: () => {
             toast.success('Iniciando sesion')
+            navigate('/')
             reset()
         },
         onError: (error) => {
