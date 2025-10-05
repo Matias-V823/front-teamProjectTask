@@ -7,6 +7,8 @@ import TaskList from "@/components/tasks/TaskList";
 import EditTaskData from "@/components/tasks/EditTaskData";
 import ViewTaskModal from "@/components/tasks/ViewTaskModal";
 import { FiArrowLeft, FiPlusCircle } from "react-icons/fi";
+import { listSprints } from '@/api/SprintBacklogApi'
+import type { Sprint }  from '@/types'
 
 
 const ProjectDetailsView = () => {
@@ -20,6 +22,28 @@ const ProjectDetailsView = () => {
         retry: 3
     })
     
+    const { data: sprints = [] } = useQuery({
+        queryKey: ['sprints', { projectId }],
+        queryFn: () => listSprints(projectId),
+        enabled: !!projectId
+    })
+
+    const today = new Date()
+    const activeSprint: Sprint | null = sprints.length > 0 ? (sprints
+        .filter((sp: any) => {
+            const start = new Date(sp.startDate)
+            const end = new Date(sp.endDate)
+            return today >= start && today <= end
+        })
+        .sort((a: any, b: any) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime())[0] || null) : null
+
+    const daysRemaining = activeSprint ? Math.max(0, Math.ceil((new Date(activeSprint.endDate).getTime() - today.getTime()) / (1000 * 60 * 60 * 24))) : null
+
+    function formatDate(dateStr: string) {
+        const d = new Date(dateStr)
+        return d.toLocaleDateString('es-CL', { year: 'numeric', month: 'short', day: 'numeric' })
+    }
+
     if (isLoading) return (
         <div className="flex justify-center items-center h-screen">
             <div className="loader">
@@ -87,7 +111,34 @@ const ProjectDetailsView = () => {
                     </button>
                 </nav>
             </div>
-            <h4 className="text-gray-700 text-xl p-10 font-bold">Sprint 1</h4>
+            <div className="px-10 pt-4">
+              {activeSprint ? (
+                <div className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                  <div>
+                    <h4 className="text-gray-800 text-xl font-bold mb-1">{activeSprint.name}</h4>
+                    <p className="text-sm text-gray-500">Inicio: <span className="font-medium text-gray-700">{formatDate(activeSprint.startDate)}</span> · Fin: <span className="font-medium text-gray-700">{formatDate(activeSprint.endDate)}</span></p>
+                  </div>
+                  <div className="flex items-center gap-8">
+                    <div className="text-center">
+                      <p className="text-xs uppercase tracking-wide text-gray-500">Hoy</p>
+                      <p className="text-lg font-semibold text-indigo-600">{formatDate(today.toISOString())}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs uppercase tracking-wide text-gray-500">Días restantes</p>
+                      <p className="text-lg font-semibold text-emerald-600">{daysRemaining}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : sprints.length > 0 ? (
+                <div className="bg-white border border-dashed border-gray-300 rounded-xl p-6 text-sm text-gray-600">
+                  No hay un sprint activo hoy ({formatDate(today.toISOString())}).
+                </div>
+              ) : (
+                <div className="bg-white border border-dashed border-gray-300 rounded-xl p-6 text-sm text-gray-600">
+                  Aún no se han creado sprints para este proyecto.
+                </div>
+              )}
+            </div>
             <TaskList
                 tasks={data.tasks}
             />
