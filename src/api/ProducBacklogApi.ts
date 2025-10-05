@@ -65,3 +65,15 @@ export async function reorderBacklog(projectId: string, orderIds: string[]) {
     throw e
   }
 }
+
+export async function getBacklogItem(projectId: string, storyId: string) {
+  try {
+    const { data } = await api.get(`/projects/${projectId}/product-backlog/${storyId}`)
+    const parsed = productBacklogItemSchema.safeParse(data)
+    if (parsed.success) return parsed.data
+    throw new Error('Respuesta inválida al obtener historia')
+  } catch (e: any) {
+    if (isAxiosError(e)) throw new Error(e.response?.data?.error || 'Error al obtener historia')
+    throw e
+  }
+}

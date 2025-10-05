@@ -2,11 +2,16 @@ import { Fragment } from 'react'
 import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/20/solid'
 
+export type SprintMenuItem = {
+  _id: string
+  name: string
+}
+
 type PropshandleSprintMenu = {
   hasSprints: boolean
-  sprints: string[]
+  sprints: SprintMenuItem[]
   onCreateSprint: () => void
-  onSelectSprint: (name: string) => void
+  onSelectSprint: (id: string) => void
   selectedSprint: string | null
 }
 
@@ -36,14 +41,14 @@ export default function HandleSprintMenu({ hasSprints, sprints, onCreateSprint, 
 
             <div className="space-y-1 border-t border-gray-200 pt-2 max-h-60 overflow-y-auto">
               {hasSprints ? (
-                sprints.map(name => (
+                sprints.map(sp => (
                   <PopoverButton
-                    key={name}
+                    key={sp._id}
                     as="button"
-                    onClick={() => onSelectSprint(name)}
-                    className={`w-full text-left px-2 py-1.5 text-sm rounded transition-colors ${selectedSprint === name ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-100'}`}
+                    onClick={() => onSelectSprint(sp._id)}
+                    className={`w-full text-left px-2 py-1.5 text-sm rounded transition-colors ${selectedSprint === sp._id ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-100'}`}
                   >
-                    {name}
+                    {sp.name}
                   </PopoverButton>
                 ))
               ) : (

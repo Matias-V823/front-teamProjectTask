@@ -10,9 +10,12 @@ type TaskApiType = {
 }
 
 
-export async function createTask({ formData, projectId }: Pick<TaskApiType, 'formData' | 'projectId' >) {
+export async function createTask({ formData, projectId, sprintId, storyId }: Pick<TaskApiType, 'formData' | 'projectId'> & { sprintId?: string; storyId?: string }) {
     try {
-        const { data } = await api.post<string>(`/projects/${projectId}/tasks`, formData)
+        const payload: any = { ...formData }
+        if (sprintId) payload.sprint = sprintId
+        if (storyId) payload.story = storyId
+        const { data } = await api.post<string>(`/projects/${projectId}/tasks`, payload)
         return data
     } catch (error) {
         if (isAxiosError(error) && error.response) {

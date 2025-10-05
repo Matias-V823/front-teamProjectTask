@@ -14,6 +14,8 @@ export default function AddTaskModal() {
   const location = useLocation()
   const params = useParams()
   const projectId = params.projectId!
+  const historyId = params.historyId as string | undefined
+
   const queryParams = new URLSearchParams(location.search)
   const show = queryParams.has('newTask')
 
@@ -27,6 +29,13 @@ export default function AddTaskModal() {
   })
 
   const queryClient = useQueryClient()
+  const sprints: any[] | undefined = queryClient.getQueryData(['sprints', { projectId }]) as any
+  let sprintId: string | undefined
+  if (historyId && Array.isArray(sprints)) {
+    const sprint = sprints.find(sp => Array.isArray(sp.stories) && sp.stories.includes(historyId))
+    if (sprint) sprintId = sprint._id
+  }
+
   const { mutate, isPending } = useMutation({
     mutationFn: createTask,
     onError: (error: any) => {
@@ -38,6 +47,7 @@ export default function AddTaskModal() {
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['editProject', { projectId }] })
       queryClient.invalidateQueries({ queryKey: ['project', { projectId }] })
+      queryClient.invalidateQueries({ queryKey: ['tasks', { projectId }] }) // refrescar listado de tareas
       reset()
       toast.success(data, {
         theme: 'dark',
@@ -48,7 +58,7 @@ export default function AddTaskModal() {
   })
 
   const handleCreateTask = (formData: TaskFormData) => {
-    mutate({ formData, projectId })
+    mutate({ formData, projectId, sprintId, storyId: historyId })
   }
 
   if (!show) return null

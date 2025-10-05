@@ -115,3 +115,20 @@ export type NewBacklogItemForm = Pick<ProductBacklogItem,
     'persona' | 'objetivo' | 'beneficio' | 'estimate' | 'acceptanceCriteria'
 >
 export type UpdateBacklogItemForm = NewBacklogItemForm
+
+/* Sprint Backlog */
+export const sprintSchema = z.object({
+    _id: z.string(),
+    project: z.string(),
+    name: z.string(),
+    startDate: z.string(),
+    endDate: z.string(),
+    stories: z.array(z.string()),
+    status: z.enum(['planned','active','completed','cancelled']),
+    createdAt: z.string(),
+    updatedAt: z.string()
+})
+export const sprintListSchema = z.array(sprintSchema)
+export type Sprint = z.infer<typeof sprintSchema>
+export type CreateSprintForm = Pick<Sprint, 'name' | 'startDate' | 'endDate'>
+export type UpdateSprintForm = Partial<Pick<Sprint, 'name' | 'startDate' | 'endDate' | 'status'>>

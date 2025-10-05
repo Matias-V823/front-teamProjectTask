@@ -1,88 +1,39 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { FiArrowLeft, FiPlus, FiCheck, FiTrash2 } from 'react-icons/fi'
 import AddTaskModal from '@/components/tasks/AddTaskModal'
-import { getTasks } from '@/api/TaskApi'
-import { useQuery } from '@tanstack/react-query'
-
-interface StoryDetail {
-  id: number
-  title: string
-  persona: string
-  objetivo: string
-  beneficio: string
-  estimate: number
-  acceptanceCriteria: string[]
-  description: string
-}
+import { getTasks, deleteTask, updateStatus } from '@/api/TaskApi'
+import { getBacklogItem } from '@/api/ProducBacklogApi'
+import { listSprints } from '@/api/SprintBacklogApi'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 interface StoryTask {
-  id: number
+  id: string
   description: string
   done: boolean
-}
-
-const STORY_MOCKS: Record<number, StoryDetail> = {
-  1: {
-    id: 1,
-    title: 'Como Cliente quiero visualizar el catálogo',
-    persona: 'Cliente',
-    objetivo: 'visualizar el catálogo de ítems vendidos',
-    beneficio: 'pueda ordenar un ítem',
-    estimate: 8,
-    acceptanceCriteria: [
-      'Se listan ítems con nombre, precio y stock',
-      'Se puede ver detalle de un ítem',
-      'Se puede añadir al carrito y confirmar orden'
-    ],
-    description: 'Permitir al cliente navegar y visualizar un catálogo navegable con filtros básicos.'
-  },
-  2: {
-    id: 2,
-    title: 'Como Usuario registrado quiero iniciar sesión',
-    persona: 'Usuario registrado',
-    objetivo: 'iniciar sesión de forma segura',
-    beneficio: 'pueda acceder a mis datos y pedidos',
-    estimate: 5,
-    acceptanceCriteria: [
-      'Autenticación por email y contraseña',
-      'Manejo de errores en credenciales inválidas',
-      'Cierre de sesión seguro'
-    ],
-    description: 'Implementar flujo de autenticación con persistencia y manejo de errores.'
-  },
-  3: {
-    id: 3,
-    title: 'Como Usuario quiero usar la app en móviles',
-    persona: 'Usuario',
-    objetivo: 'usar la aplicación en dispositivos móviles',
-    beneficio: 'tenga una experiencia adecuada en pantallas pequeñas',
-    estimate: 13,
-    acceptanceCriteria: [
-      'Layout responsive',
-      'Menú accesible y legible',
-      'Contenido no se desborda'
-    ],
-    description: 'Asegurar vistas adaptadas a diferentes tamaños de pantalla.'
-  }
+  originalStatus: string
 }
 
 const HistoryUserDetail = () => {
   const { historyId, projectId } = useParams()
   const navigate = useNavigate()
-  const numericId = Number(historyId)
-  const story = STORY_MOCKS[numericId] || {
-    id: numericId,
-    title: `Historia #${historyId}`,
-    persona: 'N/A',
-    objetivo: 'N/A',
-    beneficio: 'N/A',
-    estimate: 0,
-    acceptanceCriteria: ['Sin criterios definidos'],
-    description: 'No hay información disponible para esta historia.'
-  }
 
-  const [tasks, setTasks] = useState<StoryTask[]>([])
+  const { data: story, isLoading: loadingStory, error: storyError } = useQuery({
+    queryKey: ['productBacklogItem', { projectId, historyId }],
+    queryFn: () => getBacklogItem(projectId!, historyId!),
+    enabled: !!projectId && !!historyId
+  })
+
+  const { data: sprints = [] } = useQuery({
+    queryKey: ['sprints', { projectId }],
+    queryFn: () => listSprints(projectId!),
+    enabled: !!projectId
+  })
+
+  const sprintContaining = useMemo(() => {
+    if (!story) return null
+    return sprints.find(sp => sp.stories.includes(story._id)) || null
+  }, [sprints, story])
 
   const { data: tasksData, isLoading: loadingTasks, error: tasksError } = useQuery({
     queryKey: ['tasks', { projectId }],
@@ -91,23 +42,60 @@ const HistoryUserDetail = () => {
     staleTime: 30000
   })
 
+  const queryClient = useQueryClient()
+
+  const [tasks, setTasks] = useState<StoryTask[]>([])
+
   useEffect(() => {
     if (tasksData) {
-      const mapped: StoryTask[] = (tasksData as any[]).map((t: any) => ({
-        id: t._id || t.id || Math.random(),
-        description: t.description || t.name || 'Tarea sin descripción',
-        done: false
-      }))
+      const mapped: StoryTask[] = (tasksData as any[])
+        .filter((t: any) => !story || !t.story || t.story === story._id)
+        .map((t: any) => ({
+          id: (t._id || t.id || '').toString(),
+          description: t.description || t.name || 'Tarea sin descripción',
+          done: t.status === 'completed',
+          originalStatus: t.status || 'pending'
+        }))
       setTasks(mapped)
     }
-  }, [tasksData])
+  }, [tasksData, story])
 
-  const toggleTask = (id: number) => {
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ taskId, nextStatus }: { taskId: string; nextStatus: string }) => updateStatus({ projectId: projectId as any, taskId, status: nextStatus as any }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', { projectId }] })
+    }
+  })
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: (taskId: string) => deleteTask({ projectId: projectId as any, taskId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', { projectId }] })
+    }
+  })
+
+  const toggleTask = (id: string) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t))
+    const task = tasks.find(t => t.id === id)
+    if (!task) return
+    const nextStatus = task.done ? 'pending' : 'completed'
+    updateStatusMutation.mutate({ taskId: id, nextStatus })
   }
 
-  const removeTask = (id: number) => {
+  const removeTask = (id: string) => {
     setTasks(prev => prev.filter(t => t.id !== id))
+    deleteTaskMutation.mutate(id)
+  }
+
+  if (loadingStory) {
+    return (
+      <div className='p-10 text-center text-gray-500'>Cargando historia...</div>
+    )
+  }
+  if (storyError || !story) {
+    return (
+      <div className='p-10 text-center text-red-500'>No se pudo cargar la historia</div>
+    )
   }
 
   return (
@@ -127,11 +115,14 @@ const HistoryUserDetail = () => {
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
             <div className="space-y-2">
               <h1 className="text-3xl font-extrabold text-gray-800 leading-tight">{story.title}</h1>
-              <p className="text-gray-500 text-sm">ID: <span className="text-gray-700 font-medium">#{story.id}</span></p>
+              <p className="text-gray-500 text-sm">ID: <span className="text-gray-700 font-medium">#{story._id.slice(-6)}</span></p>
               <div className="flex flex-wrap gap-2 text-xs">
                 <span className="bg-indigo-50 text-indigo-600 px-2 py-1 rounded-md font-medium">Persona: {story.persona}</span>
                 <span className="bg-emerald-50 text-emerald-600 px-2 py-1 rounded-md font-medium">Objetivo: {story.objetivo}</span>
                 <span className="bg-amber-50 text-amber-600 px-2 py-1 rounded-md font-medium">Beneficio: {story.beneficio}</span>
+                {sprintContaining && (
+                  <span className="bg-sky-50 text-sky-600 px-2 py-1 rounded-md font-medium">Sprint: {sprintContaining.name}</span>
+                )}
               </div>
             </div>
             <div className="flex flex-col items-start md:items-end gap-2">
@@ -143,13 +134,11 @@ const HistoryUserDetail = () => {
           <div className="mt-6 space-y-4">
             <div>
               <h2 className="text-lg font-semibold text-gray-800 mb-2">Descripción</h2>
-              <p className="text-gray-600 text-sm leading-relaxed">{story.description}</p>
+              <p className="text-gray-600 text-sm leading-relaxed">{story.title}</p>
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-800 mb-2">Criterios de Aceptación</h2>
-              <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
-                {story.acceptanceCriteria.map((c, i) => <li key={i}>{c}</li>)}
-              </ul>
+              <pre className="text-gray-600 whitespace-pre-wrap text-sm">{story.acceptanceCriteria || '—'}</pre>
             </div>
           </div>
         </div>
@@ -182,18 +171,20 @@ const HistoryUserDetail = () => {
             ) : (
               tasks.map(task => (
                 <div key={task.id} className="grid grid-cols-12 gap-4 p-3 text-sm items-center border-t border-gray-100 bg-white hover:bg-gray-50 transition-colors">
-                  <div className="col-span-1 text-center text-gray-400">#{String(task.id).slice(0,6)}</div>
+                  <div className="col-span-1 text-center text-gray-400">#{task.id.slice(0,6)}</div>
                   <div className={`col-span-8 md:col-span-8 pr-2 ${task.done ? 'line-through text-gray-400' : 'text-gray-700'}`}>{task.description}</div>
                   <div className="col-span-3 md:col-span-3 flex items-center justify-center gap-2">
                     <button
+                      disabled={updateStatusMutation.isPending}
                       onClick={() => toggleTask(task.id)}
-                      className={`cursor-pointer inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded transition-colors ${task.done ? 'text-emerald-600 hover:bg-emerald-50' : 'text-indigo-600 hover:bg-indigo-50'}`}
+                      className={`cursor-pointer inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded transition-colors ${task.done ? 'text-emerald-600 hover:bg-emerald-50' : 'text-indigo-600 hover:bg-indigo-50'} ${updateStatusMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                      <FiCheck className="w-4 h-4" /> 
+                      <FiCheck className="w-4 h-4" />
                     </button>
                     <button
+                      disabled={deleteTaskMutation.isPending}
                       onClick={() => removeTask(task.id)}
-                      className="cursor-pointer text-red-600 hover:text-red-700 text-xs font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors inline-flex items-center gap-1"
+                      className={`cursor-pointer text-red-600 hover:text-red-700 text-xs font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors inline-flex items-center gap-1 ${deleteTaskMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <FiTrash2 className="w-4 h-4" /> Borrar
                     </button>
@@ -204,7 +195,7 @@ const HistoryUserDetail = () => {
           </div>
         </div>
       </div>
-      <AddTaskModal/>
+      <AddTaskModal />
     </div>
   )
 }

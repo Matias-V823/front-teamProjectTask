@@ -1,9 +1,13 @@
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
 import { FiX } from 'react-icons/fi'
 import { Fragment, useMemo, useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { getProductBacklog } from '@/api/ProducBacklogApi'
+import { type ProductBacklogItem } from '@/types'
+import { useParams } from 'react-router'
 
 export type SprintStory = {
-    id: number
+    id: string
     title: string
     estimate: number
 }
@@ -15,29 +19,29 @@ interface ModalSelectHistoryUserProps {
     selected: SprintStory[]
 }
 
-const MOCK_STORIES: SprintStory[] = [
-    { id: 1, title: 'Como Cliente quiero visualizar el catálogo', estimate: 8 },
-    { id: 2, title: 'Como Usuario registrado quiero iniciar sesión', estimate: 5 },
-    { id: 3, title: 'Como Usuario quiero usar la app en móviles', estimate: 13 },
-    { id: 4, title: 'Como Admin quiero gestionar usuarios', estimate: 3 },
-    { id: 5, title: 'Como Cliente quiero filtrar productos', estimate: 5 },
-]
-
 const ModalSelectHistoryUser = ({ isOpen, onClose, onConfirm, selected }: ModalSelectHistoryUserProps) => {
-    const [checked, setChecked] = useState<Record<number, boolean>>({})
+    const { projectId } = useParams()
+    const { data: backlog = [], isLoading } = useQuery({
+        queryKey: ['productBacklog', { projectId }],
+        queryFn: () => getProductBacklog(projectId!),
+        enabled: isOpen && !!projectId
+    })
+
+    const [checked, setChecked] = useState<Record<string, boolean>>({})
 
     useEffect(() => {
-        const map: Record<number, boolean> = {}
+        const map: Record<string, boolean> = {}
         selected.forEach(s => { map[s.id] = true })
         setChecked(map)
     }, [selected, isOpen])
 
-    const toggle = (id: number) => {
+    const toggle = (id: string) => {
         setChecked(prev => ({ ...prev, [id]: !prev[id] }))
     }
 
-    const allSelected = useMemo(() => MOCK_STORIES.filter(s => checked[s.id]), [checked])
-    const totalPoints = allSelected.reduce((t, s) => t + s.estimate, 0)
+    const stories: SprintStory[] = backlog.map((i: ProductBacklogItem) => ({ id: i._id, title: i.title, estimate: i.estimate }))
+    const allSelected = useMemo(() => stories.filter(s => checked[s.id]), [checked, stories])
+    const totalPoints = allSelected.reduce((t, s) => t + (s.estimate || 0), 0)
 
     return (
         <Transition appear show={isOpen} as={Fragment}>
@@ -94,22 +98,18 @@ const ModalSelectHistoryUser = ({ isOpen, onClose, onConfirm, selected }: ModalS
                                             <div className="col-span-2 md:col-span-1 text-center">ID</div>
                                         </div>
                                         <div className="max-h-[380px] overflow-y-auto divide-y divide-gray-200">
-                                            {MOCK_STORIES.map(story => {
+                                            {isLoading ? (
+                                                <div className="p-4 text-sm text-gray-500">Cargando historias...</div>
+                                            ) : stories.length === 0 ? (
+                                                <div className="p-4 text-sm text-gray-500">No hay historias en el Product Backlog.</div>
+                                            ) : stories.map(story => {
                                                 const isChecked = !!checked[story.id]
                                                 return (
-                                                    <label
-                                                        key={story.id}
-                                                        className={`grid grid-cols-12 gap-4 p-3 text-sm items-center cursor-pointer transition-colors ${isChecked ? 'bg-indigo-50' : 'hover:bg-gray-50'}`}
-                                                    >
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={isChecked}
-                                                            onChange={() => toggle(story.id)}
-                                                            className="col-span-1 mx-auto h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer"
-                                                        />
+                                                    <label key={story.id} className={`grid grid-cols-12 gap-4 p-3 text-sm items-center cursor-pointer transition-colors ${isChecked ? 'bg-indigo-50' : 'hover:bg-gray-50'}`}>
+                                                        <input type="checkbox" checked={isChecked} onChange={() => toggle(story.id)} className="col-span-1 mx-auto h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer" />
                                                         <span className="col-span-7 md:col-span-8 text-gray-700 pr-2 truncate" title={story.title}>{story.title}</span>
                                                         <span className="col-span-2 md:col-span-2 text-center font-medium text-indigo-600">{story.estimate}</span>
-                                                        <span className="col-span-2 md:col-span-1 text-center text-gray-400">#{story.id}</span>
+                                                        <span className="col-span-2 md:col-span-1 text-center text-gray-400">#{story.id.slice(-4)}</span>
                                                     </label>
                                                 )
                                             })}

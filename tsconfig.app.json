@@ -13,6 +13,7 @@
       "@/layouts/*" : ["layouts/*"],
       "@/api/*" : ["api/*"],
       "@/types/*" : ["types/*"],
+      "@/types": ["types/index.ts"],
       "@/lib/*" : ["lib/*"],
       "@/locales/*" : ["locales/*"],
       "@/hooks/*" : ["hooks/*"],
