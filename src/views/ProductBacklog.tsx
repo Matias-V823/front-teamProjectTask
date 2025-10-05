@@ -1,183 +1,184 @@
-import ModalAddBacklog from '@/components/projects/productBacklog/ModalAddBacklog';
-import { useMemo, useState } from 'react';
-import { FiArrowLeft, FiPlus } from 'react-icons/fi';
-import { useNavigate } from 'react-router';
-
-interface Story {
-  id: number;
-  persona: string;
-  objetivo: string;
-  beneficio: string;
-  title: string;
-  estimate: number;
-  acceptanceCriteria: string;
-  order: number;
-}
+import ModalAddBacklog from '@/components/projects/productBacklog/ModalAddBacklog'
+import { useMemo, useState } from 'react'
+import { FiArrowLeft, FiPlus, FiChevronUp, FiChevronDown, FiEdit, FiTrash2, FiX, FiMoreVertical } from 'react-icons/fi'
+import { useNavigate, useParams } from 'react-router'
+import {
+  type ProductBacklogItem,
+  type NewBacklogItemForm
+} from '@/types'
+import {
+  getProductBacklog,
+  createBacklogItem,
+  updateBacklogItem,
+  deleteBacklogItem,
+  reorderBacklog
+} from '@/api/ProducBacklogApi'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
 
 const buildTitle = (persona: string, objetivo: string, beneficio: string) =>
-  `Como ${persona}, yo quiero ${objetivo} de modo que ${beneficio}`;
+  `Como ${persona}, yo quiero ${objetivo} de modo que ${beneficio}`
 
 const ProductBacklog = () => {
-  const [backlogItems, setBacklogItems] = useState<Story[]>([
-    {
-      id: 1,
-      persona: 'Cliente',
-      objetivo: 'visualizar el catálogo de ítems vendidos',
-      beneficio: 'pueda ordenar un ítem',
-      title: buildTitle('Cliente', 'visualizar el catálogo de ítems vendidos', 'pueda ordenar un ítem'),
-      estimate: 8,
-      acceptanceCriteria:
-        '- Se listan ítems con nombre, precio y stock\n- Se puede ver detalle de un ítem\n- Se puede añadir al carrito y confirmar orden',
-      order: 1,
-    },
-    {
-      id: 2,
-      persona: 'Usuario registrado',
-      objetivo: 'iniciar sesión de forma segura',
-      beneficio: 'pueda acceder a mis datos y pedidos',
-      title: buildTitle('Usuario registrado', 'iniciar sesión de forma segura', 'pueda acceder a mis datos y pedidos'),
-      estimate: 5,
-      acceptanceCriteria:
-        '- Login por email/contraseña\n- Feedback de error en credenciales inválidas\n- Cierre de sesión',
-      order: 2,
-    },
-    {
-      id: 3,
-      persona: 'Usuario',
-      objetivo: 'usar la aplicación en dispositivos móviles',
-      beneficio: 'tenga una experiencia adecuada en pantallas pequeñas',
-      title: buildTitle('Usuario', 'usar la aplicación en dispositivos móviles', 'tenga una experiencia adecuada en pantallas pequeñas'),
-      estimate: 13,
-      acceptanceCriteria:
-        '- Layout responsive en móviles y tablets\n- Menú accesible y legible\n- Contenido no se desborda',
-      order: 3,
-    },
-  ]);
+  const { projectId } = useParams()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
-  const navigate = useNavigate();
+  const { data: items = [], isLoading, isError } = useQuery({
+    queryKey: ['productBacklog', { projectId }],
+    queryFn: () => getProductBacklog(projectId!),
+    enabled: !!projectId
+  })
 
-  const [newStory, setNewStory] = useState({
+  const [newStory, setNewStory] = useState<NewBacklogItemForm>({
     persona: '',
     objetivo: '',
     beneficio: '',
     estimate: 0,
-    acceptanceCriteria: '',
-  });
+    acceptanceCriteria: ''
+  })
 
-  const [isAdding, setIsAdding] = useState(false);
-  const [expandedItem, setExpandedItem] = useState<number | null>(null);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editForm, setEditForm] = useState({
+  const [isAdding, setIsAdding] = useState(false)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState<NewBacklogItemForm>({
     persona: '',
     objetivo: '',
     beneficio: '',
     estimate: 0,
-    acceptanceCriteria: '',
-  });
-
-  const [draggedId, setDraggedId] = useState<number | null>(null);
+    acceptanceCriteria: ''
+  })
+  const [localItems, setLocalItems] = useState<ProductBacklogItem[] | null>(null)
+  const workingItems = localItems ?? items
 
   const orderedItems = useMemo(
-    () => [...backlogItems].sort((a, b) => a.order - b.order),
-    [backlogItems]
-  );
+    () => [...workingItems].sort((a, b) => a.order - b.order),
+    [workingItems]
+  )
 
   const validateStoryStructure = (persona: string, objetivo: string, beneficio: string) =>
-    persona.trim() !== '' && objetivo.trim() !== '' && beneficio.trim() !== '';
+    persona.trim() !== '' && objetivo.trim() !== '' && beneficio.trim() !== ''
 
+  const createMutation = useMutation({
+    mutationFn: (form: NewBacklogItemForm) => createBacklogItem(projectId!, form),
+    onSuccess: () => {
+      toast.success('Historia creada')
+      queryClient.invalidateQueries({ queryKey: ['productBacklog', { projectId }] })
+      setIsAdding(false)
+      setNewStory({ persona: '', objetivo: '', beneficio: '', estimate: 0, acceptanceCriteria: '' })
+    },
+    onError: (e: any) => toast.error(e.message)
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, form }: { id: string, form: NewBacklogItemForm }) =>
+      updateBacklogItem(projectId!, id, form),
+    onSuccess: () => {
+      toast.success('Historia actualizada')
+      queryClient.invalidateQueries({ queryKey: ['productBacklog', { projectId }] })
+      setEditingId(null)
+    },
+    onError: (e: any) => toast.error(e.message)
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteBacklogItem(projectId!, id),
+    onSuccess: () => {
+      toast.success('Historia eliminada')
+      queryClient.invalidateQueries({ queryKey: ['productBacklog', { projectId }] })
+    },
+    onError: (e: any) => toast.error(e.message)
+  })
+
+  const reorderMutation = useMutation({
+    mutationFn: (ids: string[]) => reorderBacklog(projectId!, ids),
+    onError: (e: any) => {
+      toast.error(e.message)
+      queryClient.invalidateQueries({ queryKey: ['productBacklog', { projectId }] })
+    },
+    onSuccess: (data) => {
+      setLocalItems(null)
+      queryClient.setQueryData(['productBacklog', { projectId }], data)
+    }
+  })
+
+  /* Actions */
   const addStory = () => {
-    if (!validateStoryStructure(newStory.persona, newStory.objetivo, newStory.beneficio)) return;
-    const nextId = backlogItems.length > 0 ? Math.max(...backlogItems.map(i => i.id)) + 1 : 1;
-    const nextOrder = backlogItems.length + 1;
-    const story: Story = {
-      id: nextId,
-      persona: newStory.persona.trim(),
-      objetivo: newStory.objetivo.trim(),
-      beneficio: newStory.beneficio.trim(),
-      title: buildTitle(newStory.persona.trim(), newStory.objetivo.trim(), newStory.beneficio.trim()),
-      estimate: Number.isFinite(newStory.estimate) ? newStory.estimate : 0,
-      acceptanceCriteria: newStory.acceptanceCriteria,
-      order: nextOrder,
-    };
-    setBacklogItems(prev => [...prev, story]);
-    setNewStory({
-      persona: '',
-      objetivo: '',
-      beneficio: '',
-      estimate: 0,
-      acceptanceCriteria: '',
-    });
-    setIsAdding(false);
-  };
+    if (!validateStoryStructure(newStory.persona, newStory.objetivo, newStory.beneficio)) return
+    createMutation.mutate(newStory)
+  }
 
-  const deleteItem = (id: number) => {
-    const remaining = backlogItems.filter(i => i.id !== id).sort((a, b) => a.order - b.order);
-    const reindexed = remaining.map((it, idx) => ({ ...it, order: idx + 1 }));
-    setBacklogItems(reindexed);
-    if (expandedItem === id) setExpandedItem(null);
-    if (editingId === id) setEditingId(null);
-  };
-
-  const toggleExpand = (id: number) => {
-    setExpandedItem(expandedItem === id ? null : id);
-  };
-
-  const reorderByDrag = (fromId: number, toId: number) => {
-    const items = [...orderedItems];
-    const fromIdx = items.findIndex(i => i.id === fromId);
-    const toIdx = items.findIndex(i => i.id === toId);
-    if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
-    const [moved] = items.splice(fromIdx, 1);
-    items.splice(toIdx, 0, moved);
-    const reindexed = items.map((it, idx) => ({ ...it, order: idx + 1 }));
-    setBacklogItems(reindexed);
-  };
-
-  const moveByStep = (id: number, direction: 'up' | 'down') => {
-    const items = [...orderedItems];
-    const idx = items.findIndex(i => i.id === id);
-    if (idx === -1) return;
-    if (direction === 'up' && idx === 0) return;
-    if (direction === 'down' && idx === items.length - 1) return;
-    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
-    [items[idx], items[swapIdx]] = [items[swapIdx], items[idx]];
-    const reindexed = items.map((it, i) => ({ ...it, order: i + 1 }));
-    setBacklogItems(reindexed);
-  };
-
-  const startEdit = (story: Story) => {
-    setEditingId(story.id);
-    setExpandedItem(story.id);
+  const startEdit = (story: ProductBacklogItem) => {
+    setEditingId(story._id)
+    setExpandedId(story._id)
     setEditForm({
       persona: story.persona,
       objetivo: story.objetivo,
       beneficio: story.beneficio,
       estimate: story.estimate,
-      acceptanceCriteria: story.acceptanceCriteria,
-    });
-  };
+      acceptanceCriteria: story.acceptanceCriteria
+    })
+  }
 
-  const cancelEdit = () => setEditingId(null);
+  const saveEdit = (id: string) => {
+    if (!validateStoryStructure(editForm.persona, editForm.objetivo, editForm.beneficio)) return
+    updateMutation.mutate({ id, form: editForm })
+  }
 
-  const saveEdit = (id: number) => {
-    if (!validateStoryStructure(editForm.persona, editForm.objetivo, editForm.beneficio)) return;
-    setBacklogItems(prev =>
-      prev.map(i =>
-        i.id === id
-          ? {
-              ...i,
-              persona: editForm.persona.trim(),
-              objetivo: editForm.objetivo.trim(),
-              beneficio: editForm.beneficio.trim(),
-              title: buildTitle(editForm.persona.trim(), editForm.objetivo.trim(), editForm.beneficio.trim()),
-              estimate: Number.isFinite(editForm.estimate) ? editForm.estimate : 0,
-              acceptanceCriteria: editForm.acceptanceCriteria,
-            }
-          : i
-      )
-    );
-    setEditingId(null);
-  };
+  const cancelEdit = () => setEditingId(null)
+
+  const toggleExpand = (id: string) => {
+    setExpandedId(expandedId === id ? null : id)
+  }
+
+  const deleteItem = (id: string) => {
+    deleteMutation.mutate(id)
+  }
+
+  const applyLocalOrder = (list: ProductBacklogItem[]) => {
+    const reindexed = list.map((it, idx) => ({ ...it, order: idx + 1 }))
+    setLocalItems(reindexed)
+    reorderMutation.mutate(reindexed.map(i => i._id))
+  }
+
+  const moveByStep = (id: string, dir: 'up' | 'down') => {
+    const itemsArr = [...orderedItems]
+    const idx = itemsArr.findIndex(i => i._id === id)
+    if (idx === -1) return
+    if (dir === 'up' && idx === 0) return
+    if (dir === 'down' && idx === itemsArr.length - 1) return
+    const swap = dir === 'up' ? idx - 1 : idx + 1
+    ;[itemsArr[idx], itemsArr[swap]] = [itemsArr[swap], itemsArr[idx]]
+    applyLocalOrder(itemsArr)
+  }
+
+  const reorderByDrag = (fromId: string, toId: string) => {
+    const itemsArr = [...orderedItems]
+    const fromIdx = itemsArr.findIndex(i => i._id === fromId)
+    const toIdx = itemsArr.findIndex(i => i._id === toId)
+    if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return
+    const [moved] = itemsArr.splice(fromIdx, 1)
+    itemsArr.splice(toIdx, 0, moved)
+    applyLocalOrder(itemsArr)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="p-10 text-center text-gray-500">
+        Cargando Product Backlog...
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="p-10 text-center text-red-500">
+        Error al cargar el Product Backlog
+      </div>
+    )
+  }
+
+  const totalPoints = orderedItems.reduce((t, i) => t + (Number.isFinite(i.estimate) ? i.estimate : 0), 0)
 
   return (
     <div className="min-h-screen bg-gray-50 pb-12 px-4 sm:px-6 lg:px-8">
@@ -200,13 +201,11 @@ const ProductBacklog = () => {
             </p>
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 text-center">
-                <div className="text-2xl font-bold text-gray-600">{backlogItems.length}</div>
+                <div className="text-2xl font-bold text-gray-600">{orderedItems.length}</div>
                 <div className="text-sm text-gray-500">Total de historias</div>
               </div>
               <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 text-center">
-                <div className="text-2xl font-bold text-gray-600">
-                  {backlogItems.reduce((total, i) => total + (Number.isFinite(i.estimate) ? i.estimate : 0), 0)}
-                </div>
+                <div className="text-2xl font-bold text-gray-600">{totalPoints}</div>
                 <div className="text-sm text-gray-500">Puntos totales</div>
               </div>
             </div>
@@ -216,222 +215,181 @@ const ProductBacklog = () => {
               className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors shadow-sm cursor-pointer"
               onClick={() => setIsAdding(true)}
             >
-            <FiPlus />
+              <FiPlus />
               Agregar Historia de Usuario
             </button>
           </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
-            <div className="grid grid-cols-12 gap-4 p-4 bg-gray-100 text-gray-700 font-semibold text-sm">
-              <div className="col-span-1">Orden</div>
-              <div className="col-span-5">Título</div>
-              <div className="col-span-4">Resumen</div>
-              <div className="col-span-1">Puntos</div>
-              <div className="col-span-1 text-center">Acciones</div>
-            </div>
+          <div className="grid grid-cols-12 gap-4 p-4 bg-gray-100 text-gray-700 font-semibold text-sm">
+            <div className="col-span-1">Orden</div>
+            <div className="col-span-5">Título</div>
+            <div className="col-span-4">Resumen</div>
+            <div className="col-span-1">Puntos</div>
+            <div className="col-span-1 text-center">Acciones</div>
+          </div>
 
-            {orderedItems.length === 0 ? (
-              <div className="p-12 text-center text-gray-500">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-12 w-12 mx-auto text-gray-400 mb-3"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <p>No hay historias en el backlog.</p>
-              </div>
-            ) : (
-              orderedItems.map(item => (
-                <div key={item.id} className="border-t border-gray-200">
+          {orderedItems.length === 0 ? (
+            <div className="p-12 text-center text-gray-500">
+              <p>No hay historias en el backlog.</p>
+            </div>
+          ) : (
+            orderedItems.map(item => {
+              const isEditing = editingId === item._id
+              const expanded = expandedId === item._id
+              return (
+                <div key={item._id} className="border-t border-gray-200">
                   <div className="grid grid-cols-12 gap-4 p-4 items-center bg-white hover:bg-gray-50 transition-colors">
                     <div className="col-span-1 flex items-center gap-2">
                       <div className="flex flex-col">
                         <button
-                          className="text-gray-400 hover:text-gray-600"
-                          onClick={() => moveByStep(item.id, 'up')}
+                          className="text-gray-400 hover:text-gray-600 disabled:opacity-40"
+                          onClick={() => moveByStep(item._id, 'up')}
                           title="Subir prioridad"
+                          disabled={reorderMutation.isPending}
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
-                          </svg>
+                          <FiChevronUp className="w-4 h-4" />
                         </button>
                         <button
-                          className="text-gray-400 hover:text-gray-600"
-                          onClick={() => moveByStep(item.id, 'down')}
+                          className="text-gray-400 hover:text-gray-600 disabled:opacity-40"
+                          onClick={() => moveByStep(item._id, 'down')}
                           title="Bajar prioridad"
+                          disabled={reorderMutation.isPending}
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4-4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
+                          <FiChevronDown className="w-4 h-4" />
                         </button>
                       </div>
-
                       <span className="font-medium text-gray-500 w-6 text-center">{item.order}</span>
-
                       <div
                         draggable
-                        onDragStart={() => setDraggedId(item.id)}
+                        onDragStart={() => setExpandedId(item._id)}
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={() => {
-                          if (draggedId && draggedId !== item.id) reorderByDrag(draggedId, item.id);
-                          setDraggedId(null);
+                          if (expandedId && expandedId !== item._id) reorderByDrag(expandedId, item._id)
+                          setExpandedId(null)
                         }}
-                        onDragEnd={() => setDraggedId(null)}
+                        onDragEnd={() => setExpandedId(null)}
+                        className="cursor-grab text-gray-400 hover:text-gray-600 active:cursor-grabbing disabled:opacity-40"
                         title="Arrastrar para reordenar"
-                        className="cursor-grab text-gray-400 hover:text-gray-600"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M7 6a1 1 0 110-2 1 1 0 010 2zm0 5a1 1 0 110-2 1 1 0 010 2zm0 5a1 1 0 110-2 1 1 0 010 2zm6-10a1 1 0 110-2 1 1 0 010 2zm0 5a1 1 0 110-2 1 1 0 010 2zm0 5a1 1 0 110-2 1 1 0 010 2z" />
-                        </svg>
+                        <FiMoreVertical className="w-5 h-5" />
                       </div>
                     </div>
 
                     <div
                       className="col-span-5 font-normal text-gray-600 cursor-pointer"
-                      onClick={() => toggleExpand(item.id)}
-                      title="Ver detalles"
+                      onClick={() => toggleExpand(item._id)}
                     >
                       {item.title}
                     </div>
-
                     <div
                       className="col-span-4 text-gray-600 cursor-pointer"
-                      onClick={() => toggleExpand(item.id)}
-                      title="Ver detalles"
+                      onClick={() => toggleExpand(item._id)}
                     >
                       {item.objetivo}
                     </div>
-
                     <div className="col-span-1">
                       {item.estimate > 0 ? (
                         <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-indigo-100 text-indigo-700 text-sm font-medium">
                           {item.estimate}
                         </span>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
+                      ) : <span className="text-gray-400">-</span>}
                     </div>
-
                     <div className="col-span-1 flex justify-center gap-2">
-                      {editingId === item.id ? (
+                      {isEditing ? (
                         <button
                           className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
                           onClick={cancelEdit}
                           title="Cancelar edición"
                         >
-                          ✕
+                          <FiX className="w-5 h-5" />
                         </button>
                       ) : (
                         <button
-                          className="text-gray-400 hover:text-indigo-600 p-1 cursor-pointer"
+                          className="text-gray-400 hover:text-indigo-600 p-1"
                           onClick={() => startEdit(item)}
                           title="Editar historia"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828L7 16.828l-4 1 1-4 9.586-9.586z" />
-                          </svg>
+                          <FiEdit className="w-5 h-5" />
                         </button>
                       )}
                       <button
-                        className="text-red-500 hover:text-red-600 p-1 cursor-pointer"	
-                        onClick={() => deleteItem(item.id)}
+                        className="text-red-500 hover:text-red-600 p-1 disabled:opacity-40 cursor-pointer"
+                        onClick={() => deleteItem(item._id)}
                         title="Eliminar historia"
+                        disabled={deleteMutation.isPending}
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path
-                            fillRule="evenodd"
-                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                        <FiTrash2 className="w-5 h-5" />
                       </button>
                       <button
-                        className="text-gray-400 hover:text-gray-600 p-1"
-                        onClick={() => toggleExpand(item.id)}
-                        title={expandedItem === item.id ? 'Contraer detalles' : 'Expandir detalles'}
+                        className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
+                        onClick={() => toggleExpand(item._id)}
+                        title={expanded ? 'Contraer' : 'Expandir'}
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform ${expandedItem === item.id ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
-                          <path
-                            fillRule="evenodd"
-                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                        {expanded ? (
+                          <FiChevronUp className="w-5 h-5" />
+                        ) : (
+                          <FiChevronDown className="w-5 h-5" />
+                        )}
                       </button>
                     </div>
                   </div>
 
-                  {expandedItem === item.id && (
-                    <div className=" p-5 border-t border-gray-300">
-                      {editingId === item.id ? (
+                  {expanded && (
+                    <div className="p-5 border-t border-gray-300">
+                      {isEditing ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Como (Persona/Rol):</label>
-                            <input
-                              type="text"
-                              value={editForm.persona}
-                              onChange={(e) => setEditForm({ ...editForm, persona: e.target.value })}
-                              className="w-full bg-white text-gray-800 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Yo quiero (Objetivo):</label>
-                            <input
-                              type="text"
-                              value={editForm.objetivo}
-                              onChange={(e) => setEditForm({ ...editForm, objetivo: e.target.value })}
-                              className="w-full bg-white text-gray-800 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">De modo que (Beneficio):</label>
-                            <input
-                              type="text"
-                              value={editForm.beneficio}
-                              onChange={(e) => setEditForm({ ...editForm, beneficio: e.target.value })}
-                              className="w-full bg-white text-gray-800 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Estimación (puntos):</label>
-                            <input
-                              type="number"
-                              value={editForm.estimate}
-                              onChange={(e) =>
-                                setEditForm({ ...editForm, estimate: Number.parseInt(e.target.value) || 0 })
-                              }
-                              min={0}
-                              className="w-full bg-white text-gray-800 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                          </div>
+                          <input
+                            type="text"
+                            value={editForm.persona}
+                            onChange={e => setEditForm(f => ({ ...f, persona: e.target.value }))}
+                            className="bg-white border border-gray-300 rounded-md px-3 py-2"
+                            placeholder="Persona"
+                          />
+                          <input
+                            type="text"
+                            value={editForm.objetivo}
+                            onChange={e => setEditForm(f => ({ ...f, objetivo: e.target.value }))}
+                            className="bg-white border border-gray-300 rounded-md px-3 py-2"
+                            placeholder="Objetivo"
+                          />
+                          <input
+                            type="text"
+                            value={editForm.beneficio}
+                            onChange={e => setEditForm(f => ({ ...f, beneficio: e.target.value }))}
+                            className="bg-white border border-gray-300 rounded-md px-3 py-2"
+                            placeholder="Beneficio"
+                          />
+                          <input
+                            type="number"
+                            value={editForm.estimate}
+                            onChange={e => setEditForm(f => ({ ...f, estimate: Number.parseInt(e.target.value) || 0 }))}
+                            className="bg-white border border-gray-300 rounded-md px-3 py-2"
+                            min={0}
+                          />
                           <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Criterios de aceptación:</label>
                             <textarea
                               value={editForm.acceptanceCriteria}
-                              onChange={(e) => setEditForm({ ...editForm, acceptanceCriteria: e.target.value })}
+                              onChange={e => setEditForm(f => ({ ...f, acceptanceCriteria: e.target.value }))}
                               rows={3}
-                              className="w-full bg-white text-gray-800 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                              className="bg-white border border-gray-300 rounded-md px-3 py-2 w-full"
                             />
                           </div>
-
                           <div className="md:col-span-2 flex justify-end gap-3">
                             <button
-                              className="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-md transition-colors"
+                              className="bg-white border border-gray-300 hover:bg-gray-100 px-4 py-2 rounded-md inline-flex items-center gap-1 cursor-pointer"
                               onClick={cancelEdit}
                             >
-                              Cancelar
+                              <FiX className="w-4 h-4" /> Cancelar
                             </button>
                             <button
-                              className={`px-4 py-2 rounded-md transition-colors text-white ${validateStoryStructure(editForm.persona, editForm.objetivo, editForm.beneficio)
-                                ? 'bg-indigo-600 hover:bg-indigo-700'
+                              className={`px-4 py-2 rounded-md text-white ${validateStoryStructure(editForm.persona, editForm.objetivo, editForm.beneficio)
+                                ? 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer'
                                 : 'bg-indigo-300 cursor-not-allowed'
                                 }`}
-                              onClick={() => saveEdit(item.id)}
-                              disabled={!validateStoryStructure(editForm.persona, editForm.objetivo, editForm.beneficio)}
+                              disabled={!validateStoryStructure(editForm.persona, editForm.objetivo, editForm.beneficio) || updateMutation.isPending}
+                              onClick={() => saveEdit(item._id)}
                             >
                               Guardar
                             </button>
@@ -440,7 +398,7 @@ const ProductBacklog = () => {
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div>
-                            <h4 className="text-sm font-semibold text-gray-900 mb-1">Historia (estructura):</h4>
+                            <h4 className="text-sm font-semibold text-gray-900 mb-1">Historia:</h4>
                             <p className="text-gray-600">{item.title}</p>
                           </div>
                           <div>
@@ -460,10 +418,12 @@ const ProductBacklog = () => {
                     </div>
                   )}
                 </div>
-              ))
-            )}
+              )
+            })
+          )}
         </div>
       </div>
+
       <ModalAddBacklog
         isOpen={isAdding}
         onClose={() => setIsAdding(false)}
@@ -474,7 +434,7 @@ const ProductBacklog = () => {
         buildTitle={buildTitle}
       />
     </div>
-  );
-};
+  )
+}
 
-export default ProductBacklog;
+export default ProductBacklog

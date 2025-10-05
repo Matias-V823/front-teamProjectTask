@@ -59,7 +59,7 @@ export const projectSchema = z.object({
     projectName: z.string(),
     clientName: z.string(),
     description: z.string(),
-    manager: z.string(userSchema.pick({_id: true}))
+    manager: z.string()
 })
 
 export const dashboardProjectSchema = z.array(
@@ -93,3 +93,25 @@ export const projectTeamSchema = z.object({
     team: teamMemberExtendedSchema
 })
 export type ProjectTeamResponse = z.infer<typeof projectTeamSchema>
+
+/* Product Backlog */
+export const productBacklogItemSchema = z.object({
+    _id: z.string(),
+    project: z.string(),
+    persona: z.string(),
+    objetivo: z.string(),
+    beneficio: z.string(),
+    title: z.string(),
+    estimate: z.number(),
+    acceptanceCriteria: z.string(),
+    order: z.number(),
+    createdAt: z.string(),
+    updatedAt: z.string()
+})
+export const productBacklogListSchema = z.array(productBacklogItemSchema)
+
+export type ProductBacklogItem = z.infer<typeof productBacklogItemSchema>
+export type NewBacklogItemForm = Pick<ProductBacklogItem,
+    'persona' | 'objetivo' | 'beneficio' | 'estimate' | 'acceptanceCriteria'
+>
+export type UpdateBacklogItemForm = NewBacklogItemForm

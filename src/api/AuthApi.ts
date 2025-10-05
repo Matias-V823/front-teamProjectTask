@@ -110,15 +110,17 @@ export async function updatePassword({ formData, token }: updatePasswordType): P
 export async function getUser() {
     try {
         const url = `http://localhost:4000/api/auth/user`
-        const { data } = await api(url)
-        const response = userSchema.safeParse(data)
-        if(response.success){
-            return response.data
+        const { data } = await api.get(url)
+        const parsed = userSchema.safeParse(data)
+        if (!parsed.success) {
+            throw new Error('Respuesta de usuario inválida')
         }
+        return parsed.data   
     } catch (error) {
         if (isAxiosError(error) && error.response) {
             throw new Error(error.response.data.error)
         }
+        throw new Error('Error al obtener usuario')
     }
 }
 

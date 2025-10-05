@@ -158,7 +158,7 @@ const ModalAddBacklog = ({
                       </button>
                       <button
                         className={`px-4 py-2 rounded-md text-white transition-colors ${
-                          isValid ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-300 cursor-not-allowed'
+                          isValid ? 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer' : 'bg-indigo-300 cursor-not-allowed'
                         }`}
                         onClick={onAdd}
                         disabled={!isValid}
