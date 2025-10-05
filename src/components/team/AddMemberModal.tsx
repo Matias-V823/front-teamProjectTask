@@ -23,9 +23,8 @@ export default function AddMemberModal() {
                     enterTo="opacity-100"
                     leave="ease-in duration-200"
                     leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                >
-                    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
+                    leaveTo="opacity-0"                >
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
                 </TransitionChild>
 
                 <div className="fixed inset-0 overflow-y-auto">
@@ -39,24 +38,24 @@ export default function AddMemberModal() {
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <DialogPanel className="w-full max-w-2xl transform overflow-hidden rounded-xl bg-gray-900 border border-gray-800 text-left align-middle shadow-2xl transition-all p-8 relative">
+                            <DialogPanel className="w-full max-w-2xl transform overflow-hidden rounded-xl bg-white border border-gray-200 text-left align-middle shadow-2xl transition-all p-8 relative">
                                 <button
                                     onClick={() => navigate(location.pathname, { replace: true })}
-                                    className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-800 transition-colors"
+                                    className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-50 transition-colors"
                                 >
-                                    <FiX className="w-6 h-6 text-gray-400 hover:text-gray-200" />
+                                    <FiX className="w-6 h-6 text-gray-400 hover:text-gray-600 cursor-pointer" />
                                 </button>
 
                                 <div className="space-y-6">
                                     <div>
                                         <DialogTitle
                                             as="h3"
-                                            className="text-2xl font-bold text-gray-100"
+                                            className="text-2xl font-bold text-gray-900"
                                         >
                                             Agregar Integrante al equipo
                                         </DialogTitle>
-                                        <p className="text-gray-400 mt-1">
-                                            Busca el nuevo integrante por email <span className="text-fuchsia-500">para agregarlo al proyecto</span>
+                                        <p className="text-gray-600 mt-1">
+                                            Busca el nuevo integrante por email para agregarlo al proyecto
                                         </p>
                                     </div>
 
