@@ -35,7 +35,7 @@ export default function EditTaskModal({ data }: TaskProps) {
         mutationFn: updateTask,
         onError: (error) => {
             toast.error(error.message, {
-                theme: 'dark',
+                theme: 'light',
                 position: 'top-right'
             })
         },
@@ -43,7 +43,7 @@ export default function EditTaskModal({ data }: TaskProps) {
             queryClient.invalidateQueries({queryKey: ['editProject', {projectId}]})
             reset()
             toast.success(data, {
-                theme: 'dark',
+                theme: 'light',
                 position: 'top-right'
             })
             navigate(location.pathname, { replace: true })
@@ -60,6 +60,7 @@ export default function EditTaskModal({ data }: TaskProps) {
     return (
         <Transition appear show={true} as={Fragment}>
             <Dialog as="div" className="relative z-50" onClose={() => navigate(location.pathname, { replace: true })}>
+                {/* Fondo permanece oscuro para contraste */}
                 <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-300"
@@ -69,7 +70,7 @@ export default function EditTaskModal({ data }: TaskProps) {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
                 </Transition.Child>
 
                 <div className="fixed inset-0 overflow-y-auto">
@@ -83,24 +84,24 @@ export default function EditTaskModal({ data }: TaskProps) {
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-xl bg-gray-900 border border-gray-800 text-left align-middle shadow-2xl transition-all p-8 relative">
+                            <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-xl bg-white border border-gray-200 text-left align-middle shadow-2xl transition-all p-8 relative">
                                 <button
                                     onClick={() => navigate(location.pathname, { replace: true })}
 
-                                    className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-800 transition-colors"
+                                    className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
                                 >
-                                    <FiX className="w-6 h-6 text-gray-400 hover:text-gray-200" />
+                                    <FiX className="w-6 h-6 text-gray-500 hover:text-gray-700" />
                                 </button>
 
                                 <div className="space-y-6">
                                     <div>
                                         <Dialog.Title
                                             as="h3"
-                                            className="text-2xl font-bold text-gray-100"
+                                            className="text-2xl font-bold text-gray-800"
                                         >
                                             Editar Tarea
                                         </Dialog.Title>
-                                        <p className="text-gray-400 mt-1">
+                                        <p className="text-gray-500 mt-1 text-sm">
                                             Completa el formulario para editar la tarea del proyecto
                                         </p>
                                     </div>
@@ -117,10 +118,9 @@ export default function EditTaskModal({ data }: TaskProps) {
                                         <button
                                             type="submit"
                                             disabled={isPending}
-                                            className={`w-full py-3 px-6 rounded-lg font-bold text-white transition-all ${isPending
-                                                ? 'bg-indigo-800 cursor-not-allowed'
-                                                : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-indigo-500/20'
-                                                }`}
+                                            className={`w-full py-3 px-6 rounded-lg font-semibold text-white text-sm transition-all ${isPending
+                                                ? 'bg-indigo-300 cursor-not-allowed'
+                                                : 'bg-indigo-600 hover:bg-indigo-700 shadow-md hover:shadow-lg'} `}
                                         >
                                             {isPending ? (
                                                 <span className="flex items-center justify-center gap-2">
