@@ -1,21 +1,21 @@
 @import "tailwindcss";
 
 body{
-    @apply bg-gray-950
+    @apply bg-zinc-50
 }
 
 
 .formLabelAuth{
-    @apply block text-sm font-medium text-gray-300
+    @apply block text-sm font-medium text-gray-500
 }
 
 .formInputAuth{
-    @apply w-full px-3 py-2 rounded-lg bg-gray-800 border border-gray-700 text-gray-300 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors text-sm placeholder-gray-500
+    @apply w-full px-3 py-2 rounded-lg bg-gray-50 border border-gray-200 text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors text-sm placeholder-gray-300
 }
 
 
 .buttonActions {
-    @apply flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors shadow-lg hover:shadow-indigo-500/20
+    @apply flex items-center gap-1 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs rounded-md transition-colors shadow-md hover:shadow-indigo-500/20 cursor-pointer
 }
 
 .logo{

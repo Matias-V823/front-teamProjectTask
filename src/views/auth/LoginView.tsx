@@ -34,13 +34,13 @@ export default function LoginView() {
     };
 
     return (
-        <div className="h-screen bg-gray-950  px-4 sm:px-6 lg:px-8">
+        <div className="h-screen px-4 sm:px-6 lg:px-8">
             <div className="max-w-md mx-auto">
-                <div className="bg-gray-900/50 border border-gray-800 rounded-xl shadow-xl overflow-hidden">
-                    <div className="p-1 bg-gradient-to-r from-indigo-900/30 via-purple-900/30 to-gray-900">
-                        <div className="bg-gray-900/90 p-8">
+                <div className="bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                    <div className="p-1">
+                        <div className="bg-white p-8">
                             <div className="mb-8 text-center">
-                                <h1 className="text-4xl md:text-xl font-bold text-gray-100">
+                                <h1 className="text-4xl md:text-xl font-bold text-gray-600">
                                     Iniciar Sesión
                                 </h1>
                                 <p className="text-xs text-gray-400 mt-2">
@@ -103,9 +103,9 @@ export default function LoginView() {
                                                 id="remember-me"
                                                 name="remember-me"
                                                 type="checkbox"
-                                                className="h-4 w-4 rounded border-gray-700 bg-gray-800 text-indigo-600 focus:ring-indigo-500"
+                                                className="h-4 w-4 rounded border-gray-700 bg-gray-800 text-indigo-600 focus:ring-indigo-600"
                                             />
-                                            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
+                                            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-500">
                                                 Recordarme
                                             </label>
                                         </div>
@@ -113,7 +113,7 @@ export default function LoginView() {
                                         <div className="text-sm">
                                             <Link
                                                 to="/auth/forgot-password"
-                                                className="font-medium text-indigo-400 hover:text-indigo-300"
+                                                className="font-medium text-indigo-400 hover:text-indigo-500"
                                             >
                                                 ¿Olvidaste tu contraseña?
                                             </Link>
@@ -135,7 +135,7 @@ export default function LoginView() {
                                 ¿No tienes una cuenta?{' '}
                                 <Link
                                     to="/auth/register"
-                                    className="font-medium text-indigo-400 hover:text-indigo-300"
+                                    className="font-medium text-indigo-400 hover:text-indigo-600"
                                 >
                                     Regístrate
                                 </Link>

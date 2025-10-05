@@ -12,7 +12,7 @@ export default function TaskForm({errors, register} : TaskFormProps) {
         <div className="space-y-6">
             <div className="space-y-3">
                 <label
-                    className="block text-base font-medium text-gray-300"
+                    className="block text-base font-medium text-gray-700"
                     htmlFor="name"
                 >
                     Nombre de la tarea
@@ -23,9 +23,9 @@ export default function TaskForm({errors, register} : TaskFormProps) {
                         id="name"
                         type="text"
                         placeholder="Ingresar aquí nombre de la tarea"
-                        className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 outline-none text-gray-100 placeholder-gray-500"
+                        className="w-full px-4 py-3 bg-white text-gray-800 placeholder-gray-400 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 outline-none"
                         {...register("name", {
-                            required: "El nombre de la tarea es obligatorio",
+                            required: "El nombre de la tarea es obligatoria",
                         })}
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -41,7 +41,7 @@ export default function TaskForm({errors, register} : TaskFormProps) {
 
             <div className="space-y-3">
                 <label
-                    className="block text-base font-medium text-gray-300"
+                    className="block text-base font-medium text-gray-700"
                     htmlFor="description"
                 >
                     Descripción
@@ -51,7 +51,7 @@ export default function TaskForm({errors, register} : TaskFormProps) {
                     <textarea
                         id="description"
                         placeholder="Ingresar aquí descripción"
-                        className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 outline-none text-gray-100 placeholder-gray-500 min-h-[120px]"
+                        className="w-full px-4 py-3 bg-white text-gray-800 placeholder-gray-400 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 outline-none min-h-[120px]"
                         {...register("description", {
                             required: "La descripción de la tarea es obligatoria"
                         })}

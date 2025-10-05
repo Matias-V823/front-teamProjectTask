@@ -13,24 +13,22 @@ type TaskListProps = {
     tasks: Task[]
 }
 
-
 type GroupedTasks = {
     [key: string]: Task[]
 }
 
-
 export const statusColors: { [key: string]: string } = {
-    pending: "bg-yellow-900/30 text-yellow-400 border-yellow-800/50",
-    onHold: "bg-blue-900/30 text-blue-400 border-blue-800/50",
-    inProgress: "bg-purple-900/30 text-purple-400 border-purple-800/50",
-    underReview: "bg-orange-900/30 text-orange-400 border-orange-800/50",
-    completed: "bg-green-900/30 text-green-400 border-green-800/50"
+    pending: "bg-yellow-50 text-yellow-700 border-yellow-200",
+    onHold: "bg-blue-50 text-blue-700 border-blue-200",
+    inProgress: "bg-purple-50 text-purple-700 border-purple-200",
+    underReview: "bg-orange-50 text-orange-700 border-orange-200",
+    completed: "bg-green-50 text-green-700 border-green-200"
 };
 
 const priorityColors: { [key: string]: string } = {
-    high: "bg-red-900/50 text-red-300 border-red-700/50",
-    medium: "bg-amber-900/50 text-amber-300 border-amber-700/50",
-    low: "bg-gray-800 text-gray-300 border-gray-700/50"
+    high: "bg-red-100 text-red-600 border-red-200",
+    medium: "bg-amber-100 text-amber-600 border-amber-200",
+    low: "bg-gray-100 text-gray-600 border-gray-200"
 };
 
 const initialStatusGroups: GroupedTasks = {
@@ -48,7 +46,6 @@ const TaskList = ({ tasks }: TaskListProps) => {
 
     const [todayTasks, setTodayTasks] = useState<Task[]>([])
 
-
     const queryClient = useQueryClient()
     const { mutate, reset } = useMutation({
         mutationFn: deleteTask,
@@ -56,38 +53,32 @@ const TaskList = ({ tasks }: TaskListProps) => {
             queryClient.invalidateQueries({ queryKey: ['project', { projectId }] })
             reset()
             toast.success(data, {
-                theme: 'dark',
+                theme: 'light',
                 position: 'top-right'
             })
         },
         onError: (error) => {
-            toast.error(error.message)
+            toast.error(error.message, { theme: 'light' })
         }
     })
-
 
     const groupedTasks = tasks.reduce((acc, task) => {
         const currentGroup = acc[task.status] ? [...acc[task.status]] : []
         return { ...acc, [task.status]: [...currentGroup, task] }
     }, initialStatusGroups)
 
-
     const handleDeleteTask = (taskId: Task['_id']) => {
-        const data = {
-            projectId,
-            taskId
-        }
-        mutate(data)
+        mutate({ projectId, taskId })
     }
 
     return (
-        <div className="min-h-screen bg-gray-950 p-4 text-gray-100">
+        <div className="min-h-screen p-4 bg-gray-50 text-gray-800">
             <div className="max-w-9xl mx-auto">
                 <div className="space-y-6">
                     <div className="grid grid-cols-5 gap-3">
                         {Object.entries(groupedTasks).map(([status, tasks]) => (
-                            <div key={status} className="bg-gray-900 rounded-lg shadow-lg  border border-gray-800">
-                                <div className={`p-3 ${statusColors[status]} border-b border-gray-800`}>
+                            <div key={status} className="bg-white rounded-lg shadow-sm border border-gray-200">
+                                <div className={`p-3 rounded-t-md border-b ${statusColors[status]}`}>
                                     <h3 className="font-medium">{statusTranslation[status]}</h3>
                                     <span className="text-xs font-semibold">{tasks.length} tareas</span>
                                 </div>
@@ -97,18 +88,18 @@ const TaskList = ({ tasks }: TaskListProps) => {
                                         tasks.map(task => (
                                             <div
                                                 key={task._id}
-                                                className="p-3 bg-gray-800/60 rounded-lg border border-gray-700 hover:bg-gray-800 transition-all cursor-grab active:cursor-grabbing group"
+                                                className="p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all cursor-grab active:cursor-grabbing group"
                                                 draggable
                                             >
                                                 <div className="flex justify-between items-start">
                                                     <div>
-                                                        <h4 className="text-xs text-gray-100 group-hover:text-white">{task.name}</h4>
-                                                        <p className="text-[10px] text-gray-400 group-hover:text-gray-300 line-clamp-2">{task.description}</p>
+                                                        <h4 className="text-xs text-gray-800 font-medium group-hover:text-gray-900">{task.name}</h4>
+                                                        <p className="text-[11px] text-gray-500 group-hover:text-gray-600 line-clamp-2">{task.description}</p>
                                                     </div>
                                                     <div className='flex gap-1'>
                                                         <Menu as="div" className="relative">
-                                                            <MenuButton className="p-1 rounded-md hover:bg-gray-700/50 transition-colors">
-                                                                <FiMoreVertical className="h-4 w-4 text-gray-400 hover:text-gray-200" />
+                                                            <MenuButton className="p-1 rounded-md hover:bg-gray-100 transition-colors">
+                                                                <FiMoreVertical className="h-4 w-4 text-gray-500 hover:text-gray-700" />
                                                             </MenuButton>
                                                             <Transition
                                                                 as={Fragment}
@@ -119,15 +110,14 @@ const TaskList = ({ tasks }: TaskListProps) => {
                                                                 leaveFrom="transform opacity-100 scale-100"
                                                                 leaveTo="transform opacity-0 scale-95"
                                                             >
-                                                                <MenuItems className="absolute right-0 z-20 mt-2 w-40 origin-top-right rounded-md bg-gray-800 border border-gray-700 shadow-lg focus:outline-none">
+                                                                <MenuItems className="absolute right-0 z-20 mt-2 w-44 origin-top-right rounded-md bg-white border border-gray-200 shadow-lg focus:outline-none">
                                                                     <div className="py-1">
                                                                         <MenuItem>
                                                                             {({ focus }) => (
                                                                                 <button
                                                                                     type="button"
                                                                                     onClick={() => navigate(`?viewTask=${task._id}`)}
-
-                                                                                    className={`${focus ? 'bg-gray-700 text-white' : 'text-gray-300'} block w-full px-4 py-2 text-left text-sm`}
+                                                                                    className={`${focus ? 'bg-gray-100 text-gray-900' : 'text-gray-600'} block w-full px-4 py-2 text-left text-sm`}
                                                                                 >
                                                                                     Ver Tarea
                                                                                 </button>
@@ -138,7 +128,7 @@ const TaskList = ({ tasks }: TaskListProps) => {
                                                                                 <button
                                                                                     type="button"
                                                                                     onClick={() => navigate(`?editTask=${task._id}`)}
-                                                                                    className={`${focus ? 'bg-gray-700 text-white' : 'text-gray-300'} block w-full px-4 py-2 text-left text-sm`}
+                                                                                    className={`${focus ? 'bg-gray-100 text-gray-900' : 'text-gray-600'} block w-full px-4 py-2 text-left text-sm`}
                                                                                 >
                                                                                     Editar Tarea
                                                                                 </button>
@@ -149,7 +139,7 @@ const TaskList = ({ tasks }: TaskListProps) => {
                                                                                 <button
                                                                                     type="button"
                                                                                     onClick={() => handleDeleteTask(task._id)}
-                                                                                    className={`${focus ? 'bg-red-900/50 text-red-100' : 'text-red-400'} block w-full px-4 py-2 text-left text-sm`}
+                                                                                    className={`${focus ? 'bg-red-50 text-red-700' : 'text-red-600'} block w-full px-4 py-2 text-left text-sm`}
                                                                                 >
                                                                                     Eliminar Tarea
                                                                                 </button>
@@ -160,19 +150,17 @@ const TaskList = ({ tasks }: TaskListProps) => {
                                                             </Transition>
                                                         </Menu>
                                                     </div>
-
-
                                                 </div>
                                                 <div className="flex justify-between items-center mt-2">
-                                                    <span className="text-[10px] text-gray-500 group-hover:text-gray-400">
+                                                    <span className="text-[10px] text-gray-400 group-hover:text-gray-500">
                                                         {new Date(task.createdAt).toLocaleDateString()}
                                                     </span>
                                                 </div>
                                             </div>
                                         ))
                                     ) : (
-                                        <div className="text-center py-4 bg-gray-900/30 rounded-lg">
-                                            <p className="text-gray-500 text-sm">No hay tareas aquí</p>
+                                        <div className="text-center py-4 bg-white/60 rounded-lg border border-dashed border-gray-200">
+                                            <p className="text-gray-400 text-sm">No hay tareas aquí</p>
                                         </div>
                                     )}
                                 </div>

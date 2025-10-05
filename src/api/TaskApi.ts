@@ -67,3 +67,15 @@ export async function updateStatus({ status, projectId, taskId }: Pick<TaskApiTy
     }
 }
 
+export async function getTasks(projectId: Project['_id']) {
+    try {
+        const { data } = await api.get(`/projects/${projectId}/tasks`)
+        return data
+    } catch (error) {
+        if (isAxiosError(error) && error.response) {
+            throw new Error(error.response.data.error)
+        }
+        throw new Error('Error desconocido al obtener tareas')
+    }
+}
+

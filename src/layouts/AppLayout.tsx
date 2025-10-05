@@ -26,8 +26,8 @@ const AppLayout = () => {
     if (data) return (
         <>
             <header className="top-0 z-50 py-5 px-10">
-                <div className="max-w-2xl mx-auto border-[0.5px] h-[60px] rounded-2xl border-gray-700 shadow-xl backdrop-blur-3xl">
-                    <div className="h-full p-0 flex flex-col items-center lg:flex-row lg:justify-between gap-4 bg-gradient-to-r from-indigo-900/20 via-purple-900/20 to-gray-900/20 rounded-2xl">
+                <div className="max-w-2xl mx-auto border-[0.5px] h-[60px] rounded-2xl border-gray-200 shadow-xl backdrop-blur-3xl">
+                    <div className="h-full p-0 flex flex-col items-center lg:flex-row lg:justify-between gap-4 rounded-2xl">
                         <Link to='/' className="h-full flex items-center px-4 group">
                             <h2 className="logo text-lg">
                                 taskProjectTeam
@@ -47,7 +47,7 @@ const AppLayout = () => {
             <ToastContainer
                 pauseOnHover={false}
                 pauseOnFocusLoss={false}
-                theme="dark"
+                theme="light"
             />
         </>
     )

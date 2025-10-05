@@ -19,6 +19,7 @@ const ProjectDetailsView = () => {
         queryFn: () => getProjectById(projectId),
         retry: 3
     })
+    
     if (isLoading) return 'Cargando...'
     if (isError) return <Navigate to='/404' />
 
@@ -30,14 +31,14 @@ const ProjectDetailsView = () => {
                     <div className="flex items-center gap-4 mb-6">
                         <Link
                             to="/projects"
-                            className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors"
+                            className="flex items-center gap-2 text-indigo-500 hover:text-indigo-600 transition-colors"
                         >
                             <FiArrowLeft className="w-5 h-5" />
                             <span className="font-medium">Volver a proyectos</span>
                         </Link>
                     </div>
                     <div>
-                        <h1 className="text-gray-100 text-5xl  font-extrabold">{data.projectName} <FaCode className="inline-block" /></h1>
+                        <h1 className="text-gray-800 text-5xl font-extrabold">{data.projectName} <FaCode className="inline-block" /></h1>
                         <p className="text-gray-500 mt-2 text-2xl font-light">{data.description}</p>
                     </div>
                 </div>
@@ -76,9 +77,7 @@ const ProjectDetailsView = () => {
                     </button>
                 </nav>
             </div>
-            <div className="text-white text-xl p-10">
-                <h4>Mi sprint 1</h4>
-            </div>
+            <h4 className="text-gray-700 text-xl p-10 font-bold">Sprint 1</h4>
             <TaskList
                 tasks={data.tasks}
             />

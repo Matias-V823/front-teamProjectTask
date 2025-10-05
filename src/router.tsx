@@ -12,6 +12,10 @@ import ConfirmAccountView from "./views/auth/ConfirmAccountView"
 import NewCodeView from "./views/auth/NewCodeView"
 import ForgotPasswordView from "./views/auth/ForgotPasswordView"
 import NewPasswordView from "./views/auth/NewPasswordView"
+import ProductBacklog from "./views/ProductBacklog"
+import ProjectTeamView from "./views/projects/ProjectTeamView"
+import SprintBacklog from "./views/SprintBacklog"
+import HistoryUserDetail from "./views/HistoryUserDetail"
 
 export default function Router() {
     return (
@@ -23,6 +27,11 @@ export default function Router() {
                     <Route path="/projects/create" index element={<CreateProjectView/>}/>
                     <Route path="/projects/:projectId/edit" index element={<EditProjectView/>}/>
                     <Route path="/projects/:projectId/view" index element={<ProjectDetailsView/>}/>
+                    <Route path="/projects/:projectId/view/backlog" index element={<ProductBacklog/>}/>
+                    <Route path="/projects/:projectId/view/sprint-backlog" index element={<SprintBacklog/>}/>
+                    <Route path="/projects/:projectId/view/sprint-backlog/:historyId" index element={<HistoryUserDetail/>}/>
+                    <Route path="/projects/:projectId/view/team" index element={<ProjectTeamView/>}/>
+                    
                 </Route>
 
                 <Route element={<AuthLayout/>}>
