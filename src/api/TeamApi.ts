@@ -1,5 +1,5 @@
 import { isAxiosError } from 'axios';
-import { teamMemberExtendedSchema, type Project,  type TeamMember,  type TeamMemberForm } from '../types';
+import { type Project,  type TeamMember,  type TeamMemberForm } from '../types';
 import api from '@/lib/axios';
 
 
@@ -33,16 +33,19 @@ export async function addUserToProject({ projectId, id }: { projectId: Project['
 export async function getProjectTeam(projectId: Project['_id']) {
     try {
         const url = `/projects/${projectId}/team`;
-        const { data } = await api.get<string>(url);
-        const response = teamMemberExtendedSchema.safeParse(data)
-
-        if(response.success) {
-            return response.data
+        const { data } = await api.get(url);
+        const { projectTeamSchema } = await import('../types');
+        const response = projectTeamSchema.safeParse(data);
+        if (response.success) {
+            return response.data;
         }
+        throw new Error('Respuesta inválida del servidor');
     } catch (error) {
         if (isAxiosError(error) && error.response) {
             throw new Error(error.response.data.msg);
-        } 
+        } else if (error instanceof Error) {
+            throw error;
+        }
     }
 }
 

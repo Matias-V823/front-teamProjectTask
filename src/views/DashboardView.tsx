@@ -8,9 +8,10 @@ import { FiFolder, FiPlusCircle } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import { BsExclamationOctagon } from 'react-icons/bs'
 import { Link } from 'react-router'
+import { useAuth } from '@/hooks/useAuth'
 
 const DashboardView = () => {
-
+  const { data: user, isLoading: authLoading } = useAuth()
   const queryClient = useQueryClient()
 
   const { data, isLoading } = useQuery({
@@ -37,7 +38,8 @@ const DashboardView = () => {
     }
   })
 
-  if (isLoading) return (
+
+  if (isLoading && authLoading) return (
     <div className="flex justify-center items-center h-screen">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
     </div>
@@ -73,6 +75,14 @@ const DashboardView = () => {
               >
                 <div className="flex flex-col md:flex-row justify-between gap-6">
                   <div className="flex-1 min-w-0">
+                    { project.manager === user?._id ?
+                      <span className="absolute top-4 right-4 inline-flex items-center px-3 py-1 rounded-full text-[8px] font-medium bg-green-300 text-indigo-800 uppercase">
+                        Manager
+                      </span> : 
+                      <span className="absolute top-4 right-4 inline-flex items-center px-3 py-1 rounded-full text-[8px] font-medium bg-indigo-100 text-indigo-800 uppercase">
+                        Miembro del equipo
+                      </span>
+                    }
                     <Link
                       to={`/projects/${project._id}/view`}
                       className="text-2xl font-bold text-indigo-500 hover:text-indigo-600 transition-colors"
@@ -117,30 +127,37 @@ const DashboardView = () => {
                                 </Link>
                               )}
                             </MenuItem>
-                            <MenuItem>
-                              {({ focus }) => (
-                                <Link
-                                  to={`/projects/${project._id}/edit`}
-                                  className={`${focus ? 'bg-gray-100 text-gray-600' : 'text-gray-500'} block px-4 py-2 text-sm`}
-                                >
-                                  Editar Proyecto
-                                </Link>
-                              )}
-                            </MenuItem>
+                            {
+                              user?._id === project.manager && (
+                              <MenuItem>
+                                {({ focus }) => (
+                                  <Link
+                                    to={`/projects/${project._id}/edit`}
+                                    className={`${focus ? 'bg-gray-100 text-gray-600' : 'text-gray-500'} block px-4 py-2 text-sm`}
+                                  >
+                                    Editar Proyecto
+                                  </Link>
+                                )}
+                              </MenuItem>
+                            )} 
                           </div>
-                          <div className="py-1">
-                            <MenuItem>
-                              {({ focus }) => (
-                                <button
-                                  onClick={() => mutate(project._id)}
-                                  className={`${focus ? 'bg-red-500/90 text-red-100' : 'text-red-500'} w-full text-left px-4 py-2 text-sm flex items-center gap-2 cursor-pointer `}
-                                >
-                                  <BsExclamationOctagon className="w-4 h-4" />
-                                  Eliminar Proyecto
-                                </button>
-                              )}
-                            </MenuItem>
-                          </div>
+                          {
+                            user?._id === project.manager && (
+                              <div className="py-1">
+                                <MenuItem>
+                                  {({ focus }) => (
+                                    <button
+                                      onClick={() => mutate(project._id)}
+                                      className={`${focus ? 'bg-red-500/90 text-red-100' : 'text-red-500'} w-full text-left px-4 py-2 text-sm flex items-center gap-2 cursor-pointer `}
+                                    >
+                                      <BsExclamationOctagon className="w-4 h-4" />
+                                      Eliminar Proyecto
+                                    </button>
+                                  )}
+                                </MenuItem>
+                              </div>
+                            )
+                          }
                         </MenuItems>
                       </Transition>
                     </Menu>

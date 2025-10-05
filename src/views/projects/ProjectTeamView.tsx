@@ -6,8 +6,11 @@ import { FiArrowLeft } from "react-icons/fi"
 import { RiTeamFill } from "react-icons/ri";
 import { getProjectTeam, removeUserFromProject } from "@/api/TeamApi";
 import { toast } from "react-toastify";
+import { useAuth } from "@/hooks/useAuth";
+import { isManager } from "@/utils/policies";
 
 const ProjectTeamView = () => {
+    const { data: user } = useAuth()
     const navigate = useNavigate()
     const params = useParams()
     const projectId = params.projectId!
@@ -70,19 +73,22 @@ const ProjectTeamView = () => {
                             Gestiona los desarrolladores de tu proyecto
                         </p>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <button
-                            type="button"
-                            className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors shadow-sm cursor-pointer"
-                            onClick={() => navigate('?addTeamMember=true')}
-                        >
-                            Invitar desarrollador
-                        </button>
-                    </div>
+                        { data && isManager(user?._id!, data.managerId) && (
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <button
+                                    type="button"
+                                    className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors shadow-sm cursor-pointer"
+                                    onClick={() => navigate('?addTeamMember=true')}
+                                >
+                                    Invitar desarrollador
+                                </button>
+                            </div>
+                        )}
+
                 </div>
-                  {data && data.length > 0 ? (
+                  {data && data.team.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {data.map(member => (
+                        {data.team.map(member => (
                             <CardMemberTeam 
                                 key={member._id}
                                 member={{
