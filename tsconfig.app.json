@@ -15,7 +15,8 @@
       "@/types/*" : ["types/*"],
       "@/lib/*" : ["lib/*"],
       "@/locales/*" : ["locales/*"],
-      "@/hooks/*" : ["hooks/*"]
+      "@/hooks/*" : ["hooks/*"],
+      "@/utils/*" : ["utils/*"]
     },
 
     /* Bundler mode */

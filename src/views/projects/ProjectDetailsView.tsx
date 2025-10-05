@@ -80,7 +80,7 @@ const ProjectDetailsView = () => {
                     <button
                         type="button"
                         className="buttonActions"
-                        onClick={() => navigate('/')}
+                        onClick={() => navigate('generate-ai')}
                     >
                         <FiPlusCircle className="w-3 h-3" />
                         Generar con ia
