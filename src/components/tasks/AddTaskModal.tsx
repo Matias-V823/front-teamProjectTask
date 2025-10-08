@@ -4,10 +4,11 @@ import { useLocation, useNavigate, useParams } from 'react-router'
 import TaskForm from './TaskForm'
 import type { TaskFormData } from '@/types/index'
 import { useForm } from 'react-hook-form'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createTask } from '@/api/TaskApi'
 import { toast } from 'react-toastify'
 import { FiX } from 'react-icons/fi'
+import { getProjectTeam } from '@/api/TeamApi'
 
 export default function AddTaskModal() {
   const navigate = useNavigate()
@@ -21,11 +22,18 @@ export default function AddTaskModal() {
 
   const initialValues: TaskFormData = {
     name: '',
-    description: ''
+    description: '',
+    assignedTo: '' as any
   }
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     defaultValues: initialValues
+  })
+
+  const { data: teamData } = useQuery({
+    queryKey: ['teamMembers', projectId],
+    queryFn: () => getProjectTeam(projectId),
+    enabled: !!projectId
   })
 
   const queryClient = useQueryClient()
@@ -108,7 +116,7 @@ export default function AddTaskModal() {
                   </div>
 
                   <form className='space-y-6' noValidate onSubmit={handleSubmit(handleCreateTask)}>
-                    <TaskForm errors={errors} register={register} />
+                    <TaskForm errors={errors} register={register} members={teamData?.team || []} />
                     <button
                       type="submit"
                       disabled={isPending}

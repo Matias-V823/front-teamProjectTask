@@ -2,13 +2,13 @@ import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { FiX } from 'react-icons/fi';
 import { useLocation, useNavigate, useParams } from 'react-router';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Task, TaskFormData } from '@/types/index';
 import { useForm } from 'react-hook-form';
 import TaskForm from './TaskForm';
 import { updateTask } from '@/api/TaskApi';
 import { toast } from 'react-toastify';
-
+import { getProjectTeam } from '@/api/TeamApi';
 
 type TaskProps = {
     data: Task
@@ -23,10 +23,17 @@ export default function EditTaskModal({ data }: TaskProps) {
 
     const initialValues: TaskFormData = {
         name: data.name,
-        description: data.description
+        description: data.description,
+        assignedTo: (data as any).assignedTo ?? ''
     }
     const { register, handleSubmit, formState: { errors }, reset } = useForm<TaskFormData>({
         defaultValues: initialValues
+    })
+
+    const { data: teamData } = useQuery({
+        queryKey: ['teamMembers', projectId],
+        queryFn: () => getProjectTeam(projectId),
+        enabled: !!projectId
     })
 
     const queryClient = useQueryClient()
@@ -114,6 +121,7 @@ export default function EditTaskModal({ data }: TaskProps) {
                                         <TaskForm
                                             errors={errors}
                                             register={register}
+                                            members={teamData?.team || []}
                                         />
                                         <button
                                             type="submit"

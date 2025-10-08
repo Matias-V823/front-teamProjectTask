@@ -9,6 +9,7 @@ import { toast } from 'react-toastify'
 import { statusTranslation } from '@/locales/es'
 import { listSprints } from '@/api/SprintBacklogApi'
 import { DndContext, PointerSensor, useSensor, useSensors, type DragEndEvent, useDraggable, useDroppable } from '@dnd-kit/core'
+import { getProjectTeam } from '@/api/TeamApi'
 
 type TaskListProps = {
     tasks: Task[]
@@ -34,7 +35,7 @@ const initialStatusGroups: GroupedTasks = {
     completed: []
 }
 
-function DraggableTask({ task, navigate, handleDeleteTask }: { task: Task; navigate: any; handleDeleteTask: (id: string) => void }) {
+function DraggableTask({ task, navigate, handleDeleteTask, assigneeInitials }: { task: Task; navigate: any; handleDeleteTask: (id: string) => void; assigneeInitials?: string }) {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: task._id })
     const style: React.CSSProperties = {
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
@@ -44,6 +45,13 @@ function DraggableTask({ task, navigate, handleDeleteTask }: { task: Task; navig
         <div ref={setNodeRef} style={style} className="p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all cursor-grab active:cursor-grabbing group" {...listeners} {...attributes}>
             <div className="flex justify-between items-start">
                 <div>
+                    {assigneeInitials ? (
+                        <div className="mb-1">
+                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase">
+                                {assigneeInitials}
+                            </span>
+                        </div>
+                    ) : null}
                     <h4 className="text-xs text-gray-800 font-medium group-hover:text-gray-900">{task.name}</h4>
                     <p className="text-[11px] text-gray-500 group-hover:text-gray-600 line-clamp-2">{task.description}</p>
                 </div>
@@ -90,6 +98,20 @@ const TaskList = ({ tasks }: TaskListProps) => {
     const navigate = useNavigate()
     const params = useParams()
     const projectId = params.projectId!
+
+    const { data: teamData } = useQuery({
+        queryKey: ['teamMembers', projectId],
+        queryFn: () => getProjectTeam(projectId),
+        enabled: !!projectId
+    })
+
+    const memberById = useMemo(() => {
+        const map = new Map<string, { _id: string; name: string; email: string }>()
+        if (teamData?.team) {
+            for (const m of teamData.team) map.set(m._id, { _id: m._id, name: m.name, email: m.email })
+        }
+        return map
+    }, [teamData])
 
     const { data: sprints = [] } = useQuery({
         queryKey: ['sprints', { projectId }],
@@ -185,9 +207,13 @@ const TaskList = ({ tasks }: TaskListProps) => {
                                             </div>
                                             <div className="p-3 space-y-2 min-h-[60px]">
                                                 {columnTasks.length > 0 ? (
-                                                    columnTasks.map(task => (
-                                                        <DraggableTask key={task._id} task={task} navigate={navigate} handleDeleteTask={handleDeleteTask} />
-                                                    ))
+                                                    columnTasks.map(task => {
+                                                        const member = task.assignedTo ? memberById.get(String(task.assignedTo)) : undefined
+                                                        const initials = member ? member.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() : undefined
+                                                        return (
+                                                            <DraggableTask key={task._id} task={task} navigate={navigate} handleDeleteTask={handleDeleteTask} assigneeInitials={initials} />
+                                                        )
+                                                    })
                                                 ) : (
                                                     <div className="text-center py-4 bg-white/60 rounded-lg border border-dashed border-gray-200">
                                                         <p className="text-gray-400 text-sm">No hay tareas aquí</p>
@@ -206,4 +232,4 @@ const TaskList = ({ tasks }: TaskListProps) => {
     )
 }
 
-export default TaskList 
+export default TaskList

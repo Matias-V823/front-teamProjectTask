@@ -1,13 +1,15 @@
 import type { FieldErrors, UseFormRegister } from "react-hook-form";
 import ErrorMessage from "../ErrorMessage";
 import type { TaskFormData } from "@/types/index";
+import type { TeamMember } from "@/types";
 
 type TaskFormProps = {
     errors: FieldErrors<TaskFormData>
     register: UseFormRegister<TaskFormData>
+    members?: TeamMember[]
 }
 
-export default function TaskForm({errors, register} : TaskFormProps) {
+export default function TaskForm({errors, register, members = []} : TaskFormProps) {
     return (
         <div className="space-y-6">
             <div className="space-y-3">
@@ -65,6 +67,23 @@ export default function TaskForm({errors, register} : TaskFormProps) {
                 {errors.description && (
                     <ErrorMessage>{errors.description.message}</ErrorMessage>
                 )}
+            </div>
+
+            <div className="space-y-3">
+                <label className="block text-base font-medium text-gray-700" htmlFor="assignedTo">
+                    Asignar a
+                </label>
+                <select
+                    id="assignedTo"
+                    className="w-full px-4 py-3 bg-white text-gray-800 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 outline-none"
+                    {...register('assignedTo')}
+                    defaultValue=""
+                >
+                    <option value="">Sin asignar</option>
+                    {members.map(m => (
+                        <option key={m._id} value={m._id}>{m.name} ({m.email})</option>
+                    ))}
+                </select>
             </div>
         </div>
     )
