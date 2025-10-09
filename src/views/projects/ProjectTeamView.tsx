@@ -61,7 +61,7 @@ const ProjectTeamView = () => {
                         <div className="flex items-center gap-4 mb-6">
                             <button
                                 type="button"
-                                onClick={() => navigate(-1)}
+                                onClick={() => navigate(`/projects/${projectId}/view`)}
                                 className="flex items-center gap-2 text-indigo-600 hover:text-indigo-500 transition-colors cursor-pointer"
                             >
                                 <FiArrowLeft className="w-5 h-5" />

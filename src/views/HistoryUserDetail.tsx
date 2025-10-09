@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { FiArrowLeft, FiPlus, FiCheck, FiTrash2 } from 'react-icons/fi'
+import { FiArrowLeft, FiPlus, FiTrash2, FiEye, FiEdit } from 'react-icons/fi'
 import AddTaskModal from '@/components/tasks/AddTaskModal'
-import { getTasks, deleteTask, updateStatus } from '@/api/TaskApi'
+import ViewTaskModal from '@/components/tasks/ViewTaskModal'
+import EditTaskData from '@/components/tasks/EditTaskData'
+import { getTasks, deleteTask } from '@/api/TaskApi'
 import { getBacklogItem } from '@/api/ProducBacklogApi'
 import { listSprints } from '@/api/SprintBacklogApi'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -60,13 +62,6 @@ const HistoryUserDetail = () => {
     }
   }, [tasksData, story])
 
-  const updateStatusMutation = useMutation({
-    mutationFn: ({ taskId, nextStatus }: { taskId: string; nextStatus: string }) => updateStatus({ projectId: projectId as any, taskId, status: nextStatus as any }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks', { projectId }] })
-    }
-  })
-
   const deleteTaskMutation = useMutation({
     mutationFn: (taskId: string) => deleteTask({ projectId: projectId as any, taskId }),
     onSuccess: () => {
@@ -74,15 +69,7 @@ const HistoryUserDetail = () => {
     }
   })
 
-  const toggleTask = (id: string) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t))
-    const task = tasks.find(t => t.id === id)
-    if (!task) return
-    const nextStatus = task.done ? 'pending' : 'completed'
-    updateStatusMutation.mutate({ taskId: id, nextStatus })
-  }
-
-  const removeTask = (id: string) => {
+  const handleDeleteTask = (id: string) => {
     setTasks(prev => prev.filter(t => t.id !== id))
     deleteTaskMutation.mutate(id)
   }
@@ -103,7 +90,7 @@ const HistoryUserDetail = () => {
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center gap-4 pt-10 mb-6">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/projects/' + projectId + '/view' + '/sprint-backlog')}
             className="flex items-center gap-2 text-indigo-600 hover:text-indigo-500 transition-colors cursor-pointer"
           >
             <FiArrowLeft className="w-5 h-5" />
@@ -175,18 +162,23 @@ const HistoryUserDetail = () => {
                   <div className={`col-span-8 md:col-span-8 pr-2 ${task.done ? 'line-through text-gray-400' : 'text-gray-700'}`}>{task.description}</div>
                   <div className="col-span-3 md:col-span-3 flex items-center justify-center gap-2">
                     <button
-                      disabled={updateStatusMutation.isPending}
-                      onClick={() => toggleTask(task.id)}
-                      className={`cursor-pointer inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded transition-colors ${task.done ? 'text-emerald-600 hover:bg-emerald-50' : 'text-indigo-600 hover:bg-indigo-50'} ${updateStatusMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => navigate(`?viewTask=${task.id}`)}
+                      className="cursor-pointer inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded text-indigo-600 hover:bg-indigo-50 transition-colors"
                     >
-                      <FiCheck className="w-4 h-4" />
+                      <FiEye className="w-4 h-4" /> Ver
+                    </button>
+                    <button
+                      onClick={() => navigate(`?editTask=${task.id}`)}
+                      className="cursor-pointer inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded text-amber-600 hover:bg-amber-50 transition-colors"
+                    >
+                      <FiEdit className="w-4 h-4" /> Editar
                     </button>
                     <button
                       disabled={deleteTaskMutation.isPending}
-                      onClick={() => removeTask(task.id)}
-                      className={`cursor-pointer text-red-600 hover:text-red-700 text-xs font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors inline-flex items-center gap-1 ${deleteTaskMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => handleDeleteTask(task.id)}
+                      className={`cursor-pointer inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded text-red-600 hover:bg-red-50 transition-colors ${deleteTaskMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                      <FiTrash2 className="w-4 h-4" /> Borrar
+                      <FiTrash2 className="w-4 h-4" /> Eliminar
                     </button>
                   </div>
                 </div>
@@ -196,6 +188,8 @@ const HistoryUserDetail = () => {
         </div>
       </div>
       <AddTaskModal />
+      <EditTaskData />
+      <ViewTaskModal />
     </div>
   )
 }
