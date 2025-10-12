@@ -5,8 +5,8 @@ const AuthLayout = () => {
     return (
         <>
             <div className="h-screen">
-                <div className="py-5 lg:pt-15 mx-auto">
-                    <h2 className="logo text-5xl text-center">
+                <div className="mx-auto">
+                    <h2 className="logo py-5 text-3xl text-center">
                         taskProjectTeam
                     </h2>
                     <div className="mt-10">

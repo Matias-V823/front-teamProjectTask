@@ -1,17 +1,35 @@
 import { z } from 'zod'
 
 /* AUTH & USERS */
+export const userRoleSchema = z.enum(['Scrum Master','Product Owner','Scrum Team'])
+export type UserRole = z.infer<typeof userRoleSchema>
+
+export const developerStrengthSchema = z.enum(['frontend','backend','database','testing'])
+export type DeveloperStrength = z.infer<typeof developerStrengthSchema>
+
+export const developerProfileSchema = z.object({
+    yearsExperience: z.number().int().min(0).default(0),
+    technologies: z.array(z.string()).default([]),
+    strengths: z.array(developerStrengthSchema).default([])
+})
+
 const authSchema = z.object({
     name: z.string(),
     email: z.string().email(),
     password: z.string(),
     password_confirmation: z.string(),
     token: z.string()
+}).extend({
+    role: userRoleSchema.optional(),
+    developerProfile: developerProfileSchema.optional()
 })
 
 type Auth = z.infer<typeof authSchema>
 export type UserLoginForm = Pick<Auth, "email" | "password">
-export type UserRegistrationForm = Pick<Auth, "name" |"email" | "password" | "password_confirmation">
+export type UserRegistrationForm = Pick<Auth, "name" |"email" | "password" | "password_confirmation"> & {
+    role?: UserRole
+    developerProfile?: z.infer<typeof developerProfileSchema>
+}
 export type UserConfirmationForm = Pick<Auth, "token" >
 export type RequestConfirmationCodeForm = Pick<Auth, "email">
 export type ForgotPasswordForm = Pick<Auth, "email">
@@ -22,11 +40,13 @@ export type validateTokenPassword = Pick<Auth, "token" >
 /**  Users  **/
 
 
-export const userSchema = authSchema.pick({
-    name: true,
-    email: true
+export const userSchema = z.object({
+    _id: z.string(),
+    name: z.string(),
+    email: z.string().email()
 }).extend({
-    _id: z.string()
+    role: userRoleSchema.optional(),
+    developerProfile: developerProfileSchema.optional()
 })
 
 export type User = z.infer<typeof userSchema>
