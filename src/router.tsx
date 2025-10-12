@@ -18,6 +18,7 @@ import SprintBacklog from "./views/SprintBacklog"
 import HistoryUserDetail from "./views/HistoryUserDetail"
 import GenerateWithAIForm from "./components/GenerateWithAIForm"
 import Profile from "./views/Profile"
+import ReportsView from "./views/ReportsView"
 
 export default function Router() {
     return (
@@ -27,6 +28,8 @@ export default function Router() {
                     <Route path="/" index element={<Home/>}/>
                     <Route path="/profile" index element={<Profile/>}/>
                     <Route path="/projects" index element={<DashboardView/>}/>
+                    <Route path="/reports" index element={<ReportsView/>}/>
+                    <Route path="/projects/:projectId/reports" index element={<ReportsView/>}/>
                     <Route path="/projects/create" index element={<CreateProjectView/>}/>
                     <Route path="/projects/:projectId/edit" index element={<EditProjectView/>}/>
                     <Route path="/projects/:projectId/view" index element={<ProjectDetailsView/>}/>

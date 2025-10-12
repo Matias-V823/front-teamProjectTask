@@ -63,7 +63,7 @@ export default function NavMenu({ name }: NavMenuProps) {
                 Mis Proyectos
               </Link>
               <Link
-                to='/projects'
+                to='/reports'
                 className='block px-2 py-1.5 text-sm text-gray-500 hover:bg-gray-100 rounded transition-colors'
               >
                 Reportes
