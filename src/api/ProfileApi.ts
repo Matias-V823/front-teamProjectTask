@@ -1,6 +1,6 @@
 import api from '@/lib/axios'
 import { isAxiosError } from 'axios'
-import { userSchema, type User } from '@/types'
+import { userSchema } from '@/types'
 
 export async function getProfile() {
   try {
