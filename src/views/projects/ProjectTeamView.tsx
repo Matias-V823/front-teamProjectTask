@@ -87,13 +87,13 @@ const ProjectTeamView = () => {
                         )}
                     </div>
                     <div className="items-center gap-4 mt-6 w-auto ">
-                        <div className="bg-white p-4 rounded-lg shadow text-center w-full sm:w-auto flex items-center gap-2">
+                        <div className="bg-gray-800 p-4 rounded-lg shadow text-center w-full sm:w-auto flex items-center gap-2">
                             <div className="w-14 h-14 rounded-full bg-indigo-100 border-4 border-indigo-200 flex items-center justify-center">
                                 <span className="text-base font-bold text-indigo-600">{scrumMasterInitials}</span>
                             </div>
                             <div className="flex flex-col items-center">
                                 <h2 className="text-xs text-gray-400">Scrum Master</h2>
-                                <p>{scrumMasterDisplayName}</p>
+                                <p className="text-gray-200 font-extrabold">{scrumMasterDisplayName}</p>
                                 {scrumMaster && isManager(user?._id!, data.managerId) && (
                                     <button
                                         type="button"
