@@ -15,14 +15,14 @@ const ProjectTeamView = () => {
     const params = useParams()
     const projectId = params.projectId!
     const queryClient = useQueryClient()
-  
-    
+
+
     const { data, isLoading, isError } = useQuery({
         queryKey: ['teamMembers', projectId],
         queryFn: () => getProjectTeam(projectId),
         retry: false
     })
-    
+
     const { mutate } = useMutation({
         mutationFn: removeUserFromProject,
         onError: (error: any) => {
@@ -34,7 +34,7 @@ const ProjectTeamView = () => {
         }
     })
 
-    if(isLoading) return (
+    if (isLoading) return (
         <div className="flex justify-center items-center h-screen">
             <div className="loader">
                 <div className="loader-circle"></div>
@@ -45,7 +45,7 @@ const ProjectTeamView = () => {
         </div>
     )
 
-    if(isError) return <Navigate to='/404'/>
+    if (isError) return <Navigate to='/404' />
 
 
 
@@ -53,7 +53,11 @@ const ProjectTeamView = () => {
         mutate({ projectId, userId: userId });
     }
 
-    if(data) return (
+    const scrumMaster = data?.team.find(member => member.role === 'Scrum Master');
+    const scrumMasterInitials = scrumMaster ? scrumMaster.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'N/A';
+    const scrumMasterDisplayName = scrumMaster ? scrumMaster.name : 'Invitar Scrum Master a colaborar';
+
+    if (data) return (
         <div className="min-h-screen bg-gray-50 pb-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pt-10 pb-6 border-b border-gray-200">
@@ -72,24 +76,45 @@ const ProjectTeamView = () => {
                         <p className="text-lg font-normal text-gray-500">
                             Gestiona los desarrolladores de tu proyecto
                         </p>
-                    </div>
-                        { data && isManager(user?._id!, data.managerId) && (
-                            <div className="flex flex-col sm:flex-row gap-3">
-                                <button
-                                    type="button"
-                                    className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors shadow-sm cursor-pointer"
-                                    onClick={() => navigate('?addTeamMember=true')}
-                                >
-                                    Invitar desarrollador
-                                </button>
-                            </div>
+                        {data && isManager(user?._id!, data.managerId) && (
+                            <button
+                                type="button"
+                                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors shadow-sm cursor-pointer mt-2"
+                                onClick={() => navigate('?addTeamMember=true')}
+                            >
+                                Invitar Colaborador
+                            </button>
                         )}
+                    </div>
+                    <div className="items-center gap-4 mt-6 w-auto ">
+                        <div className="bg-white p-4 rounded-lg shadow text-center w-full sm:w-auto flex items-center gap-2">
+                            <div className="w-14 h-14 rounded-full bg-indigo-100 border-4 border-indigo-200 flex items-center justify-center">
+                                <span className="text-base font-bold text-indigo-600">{scrumMasterInitials}</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <h2 className="text-xs text-gray-400">Scrum Master</h2>
+                                <p>{scrumMasterDisplayName}</p>
+                                {scrumMaster && isManager(user?._id!, data.managerId) && (
+                                    <button
+                                        type="button"
+                                        className="ml-2 inline-flex items-center text-red-600 hover:text-red-700 text-xs font-medium cursor-pointer"
+                                        onClick={() => handleRemoveMember(scrumMaster._id)}
+                                    >
+                                        Remover
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
 
                 </div>
-                  {data && data.team.length > 0 ? (
+                {data && data.team.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {data.team.map(member => (
-                            <CardMemberTeam 
+                        {data.team
+                            .filter(member => member.role !== 'Scrum Master' && member.role !== 'Product Owner')
+                            .map(member => (
+                            <CardMemberTeam
                                 key={member._id}
                                 member={{
                                     id: member._id,

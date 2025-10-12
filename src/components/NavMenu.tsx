@@ -9,11 +9,9 @@ type NavMenuProps = {
   name: User['name']
 }
 
-
 export default function NavMenu({ name }: NavMenuProps) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-
 
   const logout = () => {
     localStorage.clear()
@@ -22,7 +20,7 @@ export default function NavMenu({ name }: NavMenuProps) {
   }
 
   return (
-    <Popover className="relative">
+    <Popover className="relative z-[9999]">
       <PopoverButton className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
         <Bars3Icon className='w-5 h-5 text-gray-400' />
       </PopoverButton>
@@ -36,7 +34,7 @@ export default function NavMenu({ name }: NavMenuProps) {
         leaveFrom="opacity-100 translate-y-0"
         leaveTo="opacity-0 translate-y-1"
       >
-        <PopoverPanel className="absolute right-0 z-30 mt-2 w-48 origin-top-right rounded-lg bg-white border border-gray-200 shadow-xl">
+        <PopoverPanel className="absolute right-0 z-[9999] mt-2 w-48 origin-top-right rounded-lg bg-white border border-gray-200 shadow-xl">
           <div className="p-2">
             <div className="flex items-center justify-between mb-2 px-2 py-1">
               <p className="text-xs font-medium text-indigo-400">Hola: {name}</p>

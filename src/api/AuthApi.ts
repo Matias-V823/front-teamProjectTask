@@ -11,7 +11,7 @@ export type CreateAccountResponse = {
 
 export async function login(formData: UserLoginForm) {
     try {
-        const url = "http://localhost:4000/api/auth/login"
+        const url = "/auth/login"
         const { data } = await api.post<string>(url, formData)
         localStorage.setItem('AUTH_TOKEN', data)
         console.log(data)
@@ -25,7 +25,7 @@ export async function login(formData: UserLoginForm) {
 }
 export async function createAccount(formData: UserRegistrationForm): Promise<CreateAccountResponse> {
     try {
-        const url = "http://localhost:4000/api/auth/create-account"
+        const url = "/auth/create-account"
         const { data } = await api.post<CreateAccountResponse>(url, formData)
         console.log(data)
         return data
@@ -39,7 +39,7 @@ export async function createAccount(formData: UserRegistrationForm): Promise<Cre
 
 export async function confirmAccount(token: UserConfirmationForm): Promise<CreateAccountResponse> {
     try {
-        const url = "http://localhost:4000/api/auth/confirm-account"
+        const url = "/auth/confirm-account"
         const { data } = await api.post<CreateAccountResponse>(url, token)
         return data
     } catch (error) {
@@ -54,7 +54,7 @@ export async function confirmAccount(token: UserConfirmationForm): Promise<Creat
 
 export async function RequestCode(formData: RequestConfirmationCodeForm): Promise<CreateAccountResponse> {
     try {
-        const url = "http://localhost:4000/api/auth/request-code"
+        const url = "/auth/request-code"
         const { data } = await api.post<CreateAccountResponse>(url, formData)
         return data
     } catch (error) {
@@ -66,7 +66,7 @@ export async function RequestCode(formData: RequestConfirmationCodeForm): Promis
 }
 export async function forgotPassword(formData: RequestConfirmationCodeForm): Promise<CreateAccountResponse> {
     try {
-        const url = "http://localhost:4000/api/auth/forgot-password"
+        const url = "/auth/forgot-password"
         const { data } = await api.post<CreateAccountResponse>(url, formData)
         return data
     } catch (error) {
@@ -78,7 +78,7 @@ export async function forgotPassword(formData: RequestConfirmationCodeForm): Pro
 }
 export async function validateToken(formData: validateTokenPassword): Promise<CreateAccountResponse> {
     try {
-        const url = "http://localhost:4000/api/auth/validate-token"
+        const url = "/auth/validate-token"
         const { data } = await api.post<CreateAccountResponse>(url, formData)
         return data
     } catch (error) {
@@ -96,7 +96,7 @@ type updatePasswordType = {
 
 export async function updatePassword({ formData, token }: updatePasswordType): Promise<CreateAccountResponse> {
     try {
-        const url = `http://localhost:4000/api/auth/new-password/${token}`
+        const url = `/auth/new-password/${token}`
         const { data } = await api.post<CreateAccountResponse>(url, formData)
         return data
     } catch (error) {
@@ -109,7 +109,7 @@ export async function updatePassword({ formData, token }: updatePasswordType): P
 
 export async function getUser() {
     try {
-        const url = `http://localhost:4000/api/auth/user`
+        const url = `/auth/user`
         const { data } = await api.get(url)
         const parsed = userSchema.safeParse(data)
         if (!parsed.success) {
