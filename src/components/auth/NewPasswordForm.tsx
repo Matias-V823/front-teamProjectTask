@@ -44,12 +44,12 @@ export default function NewPasswordForm({token} : newPasswordProps) {
     return (
         <div className="max-w-md mx-auto p-6">
             <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 mb-3">
+                <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500 mb-3">
                     Nueva Contraseña
                 </h1>
-                <p className="text-gray-300">
+                <p className="text-gray-600">
                     Ingresa tu nueva {''}
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400 font-medium">
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 to-purple-500 font-medium">
                         contraseña
                     </span>
                 </p>
@@ -57,7 +57,7 @@ export default function NewPasswordForm({token} : newPasswordProps) {
 
             <form
                 onSubmit={handleSubmit(handleNewPassword)}
-                className="space-y-6 p-8 rounded-xl bg-gray-800/70 backdrop-blur-sm border border-gray-700/50 shadow-xl"
+                className="space-y-6 p-8 rounded-xl bg-white backdrop-blur-sm border border-gray-200 shadow-xl"
                 noValidate
             >
                 <div className="flex flex-col gap-3">

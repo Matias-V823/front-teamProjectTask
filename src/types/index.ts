@@ -102,7 +102,9 @@ export type ProjectFormData = Pick<Project, 'clientName' | 'projectName' | 'desc
 const teamMemberSchema = userSchema.pick({
     _id: true,
     name: true,
-    email: true
+    email: true,
+    role: true,
+    developerProfile: true
 })
 
 export const teamMemberExtendedSchema = z.array(teamMemberSchema)

@@ -53,14 +53,14 @@ const ConfirmAccountView = () => {
         <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-300 mb-2">
           Confirma tu Cuenta
         </h1>
-        <p className="text-gray-300/90">
+        <p className="text-gray-600">
           {urlToken ? "Confirmando tu cuenta automáticamente" : "Ingresa el código que recibiste por e-mail."}
         </p>
         {isSuccess && urlToken &&(
-          <p className="text-green-400 text-center">Cuenta confirmada con éxito.</p>
+          <p className="text-green-600 text-center">Cuenta confirmada con éxito.</p>
         )}
         {isError && urlToken &&(
-          <p className="text-red-400 text-center">
+          <p className="text-red-600 text-center">
             {(error as Error).message || "Hubo un error al confirmar tu cuenta."}
           </p>
         )}
@@ -69,9 +69,9 @@ const ConfirmAccountView = () => {
       {!urlToken && (
         <form
           onSubmit={handleSubmit}
-          className="space-y-6 p-8 bg-gray-800/70 backdrop-blur-sm rounded-xl border border-gray-700/50 shadow-xl"
+          className="space-y-6 p-8 bg-white backdrop-blur-sm rounded-xl border border-gray-200 shadow-xl"
         >
-          <label className="block text-sm font-medium text-gray-300/80 text-center tracking-wide uppercase">
+          <label className="block text-sm font-medium text-gray-700 text-center tracking-wide uppercase">
             Código de 6 dígitos
           </label>
 
@@ -86,7 +86,7 @@ const ConfirmAccountView = () => {
               {[...Array(6)].map((_, i) => (
                 <PinInputField
                   key={i}
-                  className="w-10 h-10 mx-1 text-center bg-gray-700/50 border border-gray-600/30 rounded-lg text-white focus:ring-2 focus:ring-purple-500/80 focus:border-transparent backdrop-blur-sm transition-all duration-150 hover:border-purple-400/30"
+                  className="w-10 h-10 mx-1 text-center bg-white border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-purple-500/80 focus:border-transparent backdrop-blur-sm transition-all duration-150 hover:border-purple-400/30"
                 />
               ))}
             </PinInput>
@@ -101,10 +101,10 @@ const ConfirmAccountView = () => {
           </button>
 
           {isSuccess && (
-            <p className="text-green-400 text-center">Cuenta confirmada con éxito.</p>
+            <p className="text-green-600 text-center">Cuenta confirmada con éxito.</p>
           )}
           {isError && (
-            <p className="text-red-400 text-center">
+            <p className="text-red-600 text-center">
               {(error as Error).message || "Hubo un error al confirmar tu cuenta."}
             </p>
           )}

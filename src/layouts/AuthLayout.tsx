@@ -4,9 +4,9 @@ import { ToastContainer } from "react-toastify"
 const AuthLayout = () => {
     return (
         <>
-            <div className="h-screen">
+            <div className="h-screen bg-gray-50">
                 <div className="mx-auto">
-                    <h2 className="logo py-5 text-3xl text-center">
+                    <h2 className="logo py-5 text-3xl text-center text-gray-800">
                         taskProjectTeam
                     </h2>
                     <div className="mt-10">
@@ -17,7 +17,7 @@ const AuthLayout = () => {
             <ToastContainer
                 pauseOnHover={false}
                 pauseOnFocusLoss={false}
-                theme="dark"
+                theme="light"
             />
 
         </>

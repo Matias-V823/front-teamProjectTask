@@ -94,9 +94,12 @@ const ProjectTeamView = () => {
                                 member={{
                                     id: member._id,
                                     name: member.name,
-                                    role: 'Desarrollador', 
+                                    role: member.role ?? 'Scrum Team',
                                     initials: member.name.split(' ').map(n => n[0]).join('').toUpperCase(),
-                                    skills: [] 
+                                    skills: [],
+                                    yearsExperience: member.developerProfile?.yearsExperience,
+                                    strengths: member.developerProfile?.strengths,
+                                    technologies: member.developerProfile?.technologies
                                 }}
                                 onRemove={handleRemoveMember}
                             />
