@@ -16,7 +16,7 @@ import ProductBacklog from "./views/ProductBacklog"
 import ProjectTeamView from "./views/projects/ProjectTeamView"
 import SprintBacklog from "./views/SprintBacklog"
 import HistoryUserDetail from "./views/HistoryUserDetail"
-import GenerateWithAIForm from "./components/GenerateWithAIForm"
+import GenerateWithAIView from "./views/projects/GenerateWithAIView"
 import Profile from "./views/Profile"
 import ReportsView from "./views/ReportsView"
 
@@ -37,7 +37,7 @@ export default function Router() {
                     <Route path="/projects/:projectId/view/sprint-backlog" index element={<SprintBacklog/>}/>
                     <Route path="/projects/:projectId/view/sprint-backlog/:historyId" index element={<HistoryUserDetail/>}/>
                     <Route path="/projects/:projectId/view/team" index element={<ProjectTeamView/>}/>
-                    <Route path="/projects/:projectId/view/generate-ai" index element={<GenerateWithAIForm/>}/>
+                    <Route path="/projects/:projectId/view/generate-ai" index element={<GenerateWithAIView/>}/>
                 </Route>
 
                 <Route element={<AuthLayout/>}>
