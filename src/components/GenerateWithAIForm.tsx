@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useParams, useNavigate } from 'react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import { getProjectById } from '@/api/ProjectApi'
 import { getProjectTeam } from '@/api/TeamApi'
+import { generateProjectPlanWithAI } from '@/api/AIApi'
 import ErrorMessage from './ErrorMessage'
 import type { AIProjectData } from '../types/ai-agent'
 import { PLATFORMS, TECHNOLOGY_CATEGORIES, getTechnologiesByCategory } from '../utils/project-options'
-import { sendToN8nWebhook } from '@/config/n8n'
+import { toast } from 'react-toastify'
 
 
 interface FormData {
@@ -19,11 +20,14 @@ interface FormData {
   sprintDuration: number
 }
 
-const GenerateWithAIForm = () => {
+interface GenerateWithAIFormProps {
+  onSuccess?: (data: any) => void
+}
+
+const GenerateWithAIForm = ({ onSuccess }: GenerateWithAIFormProps) => {
   const params = useParams()
   const navigate = useNavigate()
   const projectId = params.projectId!
-  const [isLoading, setIsLoading] = useState(false)
   const [requirements, setRequirements] = useState<string[]>([])
   const [currentRequirement, setCurrentRequirement] = useState('')
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
@@ -39,11 +43,25 @@ const GenerateWithAIForm = () => {
     retry: 3
   })
 
-  // Obtener equipo del proyecto
   const { data: teamData } = useQuery({
     queryKey: ['teamMembers', projectId],
     queryFn: () => getProjectTeam(projectId),
     retry: false
+  })
+
+  const generateMutation = useMutation({
+    mutationFn: (aiProjectData: AIProjectData) => generateProjectPlanWithAI(aiProjectData),
+    onSuccess: (data) => {
+      console.log('Respuesta del servidor:', data)
+      toast.success('Planificación generada exitosamente')
+      if (onSuccess) {
+        onSuccess(data.data || data)
+      }
+    },
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.error || error.message || 'Error desconocido'
+      toast.error(`Error: ${errorMessage}`)
+    }
   })
 
   useEffect(() => {
@@ -114,11 +132,9 @@ const GenerateWithAIForm = () => {
         ? prev.filter(id => id !== platformId)
         : [...prev, platformId]
     )
-  }
+    }
 
   const onSubmit = async (data: FormData) => {
-    setIsLoading(true)
-
     try {
       const startDate = new Date(data.startDate)
       const endDate = new Date(data.endDate)
@@ -163,14 +179,10 @@ const GenerateWithAIForm = () => {
         }
       }
 
-      console.log('Datos para n8n:', aiProjectData)
-      const result = await sendToN8nWebhook(aiProjectData)
-      
-      
+      console.log('Datos para enviar al servidor:', aiProjectData)
+      generateMutation.mutate(aiProjectData)
     } catch (error) {
-      console.log('Error al preparar los datos para n8n:', error)
-    } finally {
-      setIsLoading(false)
+      console.error('Error al preparar datos:', error)
     }
   }
 
@@ -179,8 +191,7 @@ const GenerateWithAIForm = () => {
       <div className="mb-8">
         <h2 className="text-3xl font-semibold text-gray-900 mb-3 tracking-tight">
           Generar Planificación con IA
-        </h2>
-        <div className="h-px bg-gray-200 mb-6"></div>
+        </h2>        <div className="h-px bg-gray-200 mb-6"></div>
 
         {projectData && (
           <div className="bg-gray-50 rounded-2xl p-6 mb-6 border border-gray-200">
@@ -533,16 +544,14 @@ const GenerateWithAIForm = () => {
               </button>
             </div>
           )}
-        </div>
-
-        {/* Botón de envío */}
+        </div>        {/* Botón de envío */}
         <div className="flex justify-end pt-6">
           <button
             type="submit"
-            disabled={isLoading || requirements.length === 0 || savedTechnologies.length === 0 || !teamData?.team || teamData.team.length === 0}
+            disabled={generateMutation.isPending || requirements.length === 0 || savedTechnologies.length === 0 || !teamData?.team || teamData.team.length === 0}
             className="px-8 py-4 bg-gray-900 text-white font-medium rounded-2xl hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {isLoading ? 'Generando...' : 'Generar Planificación con IA'}
+            {generateMutation.isPending ? 'Generando...' : 'Generar Planificación con IA'}
           </button>
         </div>
       </form>
