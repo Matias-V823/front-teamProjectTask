@@ -11,6 +11,12 @@ interface POBacklogItem {
   order: number
 }
 
+interface SprintInfo {
+  index: number
+  startDate: string
+  endDate: string
+}
+
 interface DevTask {
   descripcion: string
   responsable: string
@@ -18,7 +24,8 @@ interface DevTask {
 }
 
 interface DevBacklogItem {
-  historia: string
+  title: string
+  sprint: SprintInfo
   tareas: DevTask[]
 }
 
@@ -72,9 +79,11 @@ const AIResponseDisplay = ({ data, onApply, onCancel }: AIResponseDisplayProps) 
               setExpandedRows([])
             }}
             className={`px-4 py-2 rounded-lg text-sm font-medium 
-              ${selectedAgenteIndex === index
-                ? 'bg-indigo-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              ${
+                selectedAgenteIndex === index
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
           >
             {a.agente}
           </button>
@@ -98,23 +107,33 @@ const AIResponseDisplay = ({ data, onApply, onCancel }: AIResponseDisplayProps) 
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">#</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Título / Historia</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                Título / Historia
+              </th>
 
               {!isDeveloper && (
                 <>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Persona</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Objetivo</th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Esfuerzo (pts)</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                    Persona
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                    Objetivo
+                  </th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
+                    Esfuerzo (pts)
+                  </th>
                 </>
               )}
 
-              <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Acciones</th>
+              <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
+                Acciones
+              </th>
             </tr>
           </thead>
 
           <tbody className="divide-y divide-gray-200">
             {backlog.map((item, index) => {
-              const esPOItem = !isDeveloper && 'title' in item
+              const esPOItem = !isDeveloper && 'persona' in item
               const esDevItem = isDeveloper && 'tareas' in item
 
               return (
@@ -123,20 +142,20 @@ const AIResponseDisplay = ({ data, onApply, onCancel }: AIResponseDisplayProps) 
                     <td className="px-6 py-4 text-sm text-gray-800">{index + 1}</td>
 
                     <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                      {esPOItem ? item.title : 'historia' in item ? item.historia : ''}
+                      {item.title}
                     </td>
 
                     {esPOItem && (
                       <>
                         <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
-                          <p className="font-semibold">{item.persona}</p>
+                          <p className="font-semibold">{(item as POBacklogItem).persona}</p>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-700 max-w-md">
-                          <p className="line-clamp-2">{item.objetivo}</p>
+                          <p className="line-clamp-2">{(item as POBacklogItem).objetivo}</p>
                         </td>
                         <td className="px-6 py-4 text-center text-sm text-gray-700">
                           <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs bg-indigo-100 text-indigo-800 font-semibold">
-                            {item.estimate}
+                            {(item as POBacklogItem).estimate}
                           </span>
                         </td>
                       </>
@@ -159,12 +178,12 @@ const AIResponseDisplay = ({ data, onApply, onCancel }: AIResponseDisplayProps) 
                           <div className="space-y-4">
                             <div>
                               <h4 className="text-sm font-semibold mb-2">Detalles de la Historia</h4>
-                              <p className="text-sm text-gray-700">{`Como ${item.persona}, quiero ${item.objetivo} para ${item.beneficio}`}</p>
+                              <p className="text-sm text-gray-700">{`Como ${(item as POBacklogItem).persona}, quiero ${(item as POBacklogItem).objetivo} para ${(item as POBacklogItem).beneficio}`}</p>
                             </div>
                             <div>
                               <h4 className="text-sm font-semibold mb-2">Criterios de Aceptación</h4>
                               <ul className="space-y-1 list-decimal list-inside">
-                                {item.acceptanceCriteria.map((c, idx) => (
+                                {(item as POBacklogItem).acceptanceCriteria.map((c, idx) => (
                                   <li key={idx} className="text-sm text-gray-700">
                                     {c}
                                   </li>
@@ -177,7 +196,7 @@ const AIResponseDisplay = ({ data, onApply, onCancel }: AIResponseDisplayProps) 
                           <>
                             <h4 className="text-sm font-semibold mb-3">Tareas</h4>
                             <ul className="list-disc pl-6 space-y-3">
-                              {item.tareas.map((t, idx) => (
+                              {(item as DevBacklogItem).tareas.map((t, idx) => (
                                 <li key={idx} className="text-sm text-gray-700">
                                   <p className="font-medium">{t.descripcion}</p>
                                   <p className="text-gray-500 text-xs">

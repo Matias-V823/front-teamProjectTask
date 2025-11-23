@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
-import { useParams } from 'react-router'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useParams, useNavigate } from 'react-router'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { FaRobot } from "react-icons/fa"
 
 import GenerateWithAIForm from "@/components/GenerateWithAIForm"
 import AIResponseDisplay from "@/components/AIResponseDisplay"
@@ -21,10 +22,12 @@ interface AIResponseData {
 
 const GenerateWithAIView = () => {
   const { projectId } = useParams()
-  const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   const [aiResponse, setAiResponse] = useState<AIResponseData | null>(null)
   const [showForm, setShowForm] = useState(true)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [progress, setProgress] = useState(0)
 
   const createdStoriesRef = useRef<any[]>([])
   const sprintMapRef = useRef<Record<string, any>>({})
@@ -37,11 +40,11 @@ const GenerateWithAIView = () => {
 
   const createBacklogMutation = useMutation({
     mutationFn: async () => {
-      if (!projectId || !aiResponse) throw new Error('Project ID missing')
-      const productBacklog = aiResponse.agentes[0].backlog
+      const productBacklog = aiResponse!.agentes[0].backlog
+      const step = 40 / productBacklog.length
 
       for (const item of productBacklog) {
-        const created = await createBacklogItem(projectId, {
+        const created = await createBacklogItem(projectId!, {
           persona: item.persona,
           objetivo: item.objetivo,
           beneficio: item.beneficio,
@@ -55,19 +58,17 @@ const GenerateWithAIView = () => {
           title: item.title.trim().toLowerCase(),
           _id: created._id
         })
+
+        setProgress(prev => prev + step)
       }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['product-backlog', projectId] })
     }
   })
 
   const applySprintPlanning = useMutation({
     mutationFn: async () => {
-      if (!projectId || !aiResponse) throw new Error('Project ID missing')
-
-      const developerBacklog = aiResponse.agentes[1]?.backlog || []
-      const existingSprints = await listSprints(projectId)
+      const developerBacklog = aiResponse!.agentes[1].backlog
+      const existingSprints = await listSprints(projectId!)
+      const step = 60 / developerBacklog.length
 
       existingSprints.forEach(s => {
         sprintMapRef.current[s.name] = s
@@ -79,7 +80,7 @@ const GenerateWithAIView = () => {
         let sprint = sprintMapRef.current[sprintName]
 
         if (!sprint) {
-          sprint = await createSprint(projectId, {
+          sprint = await createSprint(projectId!, {
             name: sprintName,
             startDate: devItem.sprint.startDate,
             endDate: devItem.sprint.endDate
@@ -94,7 +95,7 @@ const GenerateWithAIView = () => {
 
         if (!storyMatch) continue
 
-        await assignStories(projectId, sprint._id, [storyMatch._id])
+        await assignStories(projectId!, sprint._id, [storyMatch._id])
 
         for (const tarea of devItem.tareas) {
           const assigned =
@@ -103,7 +104,7 @@ const GenerateWithAIView = () => {
             )?._id || null
 
           await createTask({
-            projectId,
+            projectId: projectId!,
             sprintId: sprint._id,
             storyId: storyMatch._id,
             formData: {
@@ -113,17 +114,23 @@ const GenerateWithAIView = () => {
             }
           })
         }
+
+        setProgress(prev => prev + step)
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['sprints', projectId] })
-      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] })
+      navigate(`/projects/${projectId}/view`)
     }
   })
 
   const handleApply = async () => {
+    setIsProcessing(true)
+    setProgress(5)
+
     await createBacklogMutation.mutateAsync()
     await applySprintPlanning.mutateAsync()
+
+    setProgress(100)
   }
 
   const handleFormSuccess = (data: AIResponseData) => {
@@ -131,21 +138,22 @@ const GenerateWithAIView = () => {
     setShowForm(false)
   }
 
-  const handleCancel = () => {
-    setAiResponse(null)
-    setShowForm(true)
-  }
-
   return (
     <>
-      {showForm ? (
+      {isProcessing ? (
+        <div className='flex flex-col items-center justify-center h-96 space-y-4'>
+          <FaRobot size={80} color="#4F46E5" style={{ animation: 'pulse 1s infinite' }} />
+          <h2 className='font-bold'>Generando planificación...</h2>
+          <p>{Math.round(progress)}%</p>
+        </div>
+      ) : showForm ? (
         <GenerateWithAIForm onSuccess={handleFormSuccess} />
       ) : (
         aiResponse && (
           <AIResponseDisplay
             data={aiResponse}
             onApply={handleApply}
-            onCancel={handleCancel}
+            onCancel={() => setShowForm(true)}
           />
         )
       )}
