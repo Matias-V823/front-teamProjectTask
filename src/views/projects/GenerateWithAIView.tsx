@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useParams } from 'react-router'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import GenerateWithAIForm from "@/components/GenerateWithAIForm"
 import AIResponseDisplay from "@/components/AIResponseDisplay"
@@ -8,6 +8,7 @@ import AIResponseDisplay from "@/components/AIResponseDisplay"
 import { createBacklogItem } from '@/api/ProducBacklogApi'
 import { createSprint, assignStories, listSprints } from '@/api/SprintBacklogApi'
 import { createTask } from '@/api/TaskApi'
+import { getProjectTeam } from '@/api/TeamApi'
 
 interface AgenteData {
   agente: string
@@ -27,6 +28,12 @@ const GenerateWithAIView = () => {
 
   const createdStoriesRef = useRef<any[]>([])
   const sprintMapRef = useRef<Record<string, any>>({})
+
+  const { data: teamData } = useQuery({
+    queryKey: ['teamMembers', projectId],
+    queryFn: () => getProjectTeam(projectId!),
+    enabled: !!projectId
+  })
 
   const createBacklogMutation = useMutation({
     mutationFn: async () => {
@@ -90,6 +97,11 @@ const GenerateWithAIView = () => {
         await assignStories(projectId, sprint._id, [storyMatch._id])
 
         for (const tarea of devItem.tareas) {
+          const assigned =
+            teamData?.team.find(
+              m => m.name.trim().toLowerCase() === tarea.responsable.trim().toLowerCase()
+            )?._id || null
+
           await createTask({
             projectId,
             sprintId: sprint._id,
@@ -97,7 +109,7 @@ const GenerateWithAIView = () => {
             formData: {
               name: tarea.descripcion.substring(0, 80),
               description: tarea.descripcion,
-              assignedTo: null
+              assignedTo: assigned
             }
           })
         }
