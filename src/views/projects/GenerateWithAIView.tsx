@@ -29,9 +29,7 @@ const GenerateWithAIView = () => {
   }
 
   const handleApply = () => {
-    // Aquí implementar la lógica para guardar/aplicar la planificación
     console.log('Aplicar planificación:', aiResponse)
-    // Después de aplicar, podrías navegar o mostrar un toast de éxito
   }
 
   const handleCancel = () => {
