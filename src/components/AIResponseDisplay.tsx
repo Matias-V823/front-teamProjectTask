@@ -2,10 +2,13 @@ import React, { useState } from 'react'
 
 interface POBacklogItem {
   id: number
-  historia: string
-  criterios_aceptacion: string[]
-  prioridad: string
-  esfuerzo_estimado: string
+  persona: string
+  objetivo: string
+  beneficio: string
+  title: string
+  estimate: number
+  acceptanceCriteria: string[]
+  order: number
 }
 
 interface DevTask {
@@ -48,20 +51,6 @@ const AIResponseDisplay = ({ data, onApply, onCancel }: AIResponseDisplayProps) 
 
   const isDeveloper = agenteActual?.agente.toLowerCase() === 'developer'
 
-  const getPriorityColor = (priority?: string) => {
-    const value = priority?.toLowerCase() || ''
-    switch (value) {
-      case 'alta':
-        return 'bg-red-100 text-red-800'
-      case 'media':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'baja':
-        return 'bg-green-100 text-green-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
   if (agentes.length === 0) {
     return (
       <div className="max-w-6xl mx-auto p-8 bg-white">
@@ -74,7 +63,6 @@ const AIResponseDisplay = ({ data, onApply, onCancel }: AIResponseDisplayProps) 
 
   return (
     <div className="max-w-6xl mx-auto p-8 bg-white">
-
       <div className="mb-6 flex gap-4">
         {agentes.map((a, index) => (
           <button
@@ -110,16 +98,13 @@ const AIResponseDisplay = ({ data, onApply, onCancel }: AIResponseDisplayProps) 
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">#</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Historia</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Título / Historia</th>
 
               {!isDeveloper && (
                 <>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
-                    Prioridad
-                  </th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
-                    Esfuerzo
-                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Persona</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Objetivo</th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">Esfuerzo (pts)</th>
                 </>
               )}
 
@@ -128,75 +113,87 @@ const AIResponseDisplay = ({ data, onApply, onCancel }: AIResponseDisplayProps) 
           </thead>
 
           <tbody className="divide-y divide-gray-200">
-            {backlog.map((item, index) => (
-              <React.Fragment key={index}>
-                <tr className="hover:bg-gray-50">
-                  <td className="px-6 py-4">{index + 1}</td>
-                  <td className="px-6 py-4">{item.historia}</td>
+            {backlog.map((item, index) => {
+              const esPOItem = !isDeveloper && 'title' in item
+              const esDevItem = isDeveloper && 'tareas' in item
 
-                  {!isDeveloper && 'prioridad' in item && (
-                    <>
-                      <td className="px-6 py-4 text-center">
-                        <span className={`px-3 py-1 rounded-full text-xs ${getPriorityColor(item.prioridad)}`}>
-                          {item.prioridad}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="px-3 py-1 rounded-full text-xs bg-indigo-100 text-indigo-800">
-                          {item.esfuerzo_estimado}
-                        </span>
-                      </td>
-                    </>
-                  )}
+              return (
+                <React.Fragment key={index}>
+                  <tr className="hover:bg-gray-50 align-top">
+                    <td className="px-6 py-4 text-sm text-gray-800">{index + 1}</td>
 
-                  <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => toggleRow(index)}
-                      className="text-indigo-600 hover:text-indigo-700 text-sm"
-                    >
-                      {expandedRows.includes(index) ? 'Ocultar' : 'Ver'}
-                    </button>
-                  </td>
-                </tr>
+                    <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                      {esPOItem ? item.title : 'historia' in item ? item.historia : ''}
+                    </td>
 
-                {expandedRows.includes(index) && (
-                  <tr className="bg-gray-50">
-                    <td colSpan={isDeveloper ? 3 : 5} className="px-6 py-6">
+                    {esPOItem && (
+                      <>
+                        <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
+                          <p className="font-semibold">{item.persona}</p>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700 max-w-md">
+                          <p className="line-clamp-2">{item.objetivo}</p>
+                        </td>
+                        <td className="px-6 py-4 text-center text-sm text-gray-700">
+                          <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs bg-indigo-100 text-indigo-800 font-semibold">
+                            {item.estimate}
+                          </span>
+                        </td>
+                      </>
+                    )}
 
-                      {isDeveloper && 'tareas' in item && (
-                        <>
-                          <h4 className="text-sm font-semibold mb-3">Tareas</h4>
-                          <ul className="list-disc pl-6 space-y-3">
-                            {item.tareas.map((t, idx) => (
-                              <li key={idx} className="text-sm text-gray-700">
-                                <p className="font-medium">{t.descripcion}</p>
-                                <p className="text-gray-500 text-xs">
-                                  Responsable: {t.responsable} — Esfuerzo: {t.esfuerzo}
-                                </p>
-                              </li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
-
-                      {!isDeveloper && 'criterios_aceptacion' in item && (
-                        <>
-                          <h4 className="text-sm font-semibold mb-3">Criterios de Aceptación</h4>
-                          <ul className="space-y-2">
-                            {item.criterios_aceptacion.map((c, idx) => (
-                              <li key={idx} className="text-sm text-gray-700">
-                                {idx + 1}. {c}
-                              </li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
-
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        onClick={() => toggleRow(index)}
+                        className="text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                      >
+                        {expandedRows.includes(index) ? 'Ocultar' : 'Ver'}
+                      </button>
                     </td>
                   </tr>
-                )}
-              </React.Fragment>
-            ))}
+
+                  {expandedRows.includes(index) && (
+                    <tr className="bg-gray-50">
+                      <td colSpan={isDeveloper ? 3 : 6} className="px-6 py-6">
+                        {esPOItem && (
+                          <div className="space-y-4">
+                            <div>
+                              <h4 className="text-sm font-semibold mb-2">Detalles de la Historia</h4>
+                              <p className="text-sm text-gray-700">{`Como ${item.persona}, quiero ${item.objetivo} para ${item.beneficio}`}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-semibold mb-2">Criterios de Aceptación</h4>
+                              <ul className="space-y-1 list-decimal list-inside">
+                                {item.acceptanceCriteria.map((c, idx) => (
+                                  <li key={idx} className="text-sm text-gray-700">
+                                    {c}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        )}
+                        {esDevItem && (
+                          <>
+                            <h4 className="text-sm font-semibold mb-3">Tareas</h4>
+                            <ul className="list-disc pl-6 space-y-3">
+                              {item.tareas.map((t, idx) => (
+                                <li key={idx} className="text-sm text-gray-700">
+                                  <p className="font-medium">{t.descripcion}</p>
+                                  <p className="text-gray-500 text-xs">
+                                    Responsable: {t.responsable} — Esfuerzo: {t.esfuerzo}
+                                  </p>
+                                </li>
+                              ))}
+                            </ul>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              )
+            })}
           </tbody>
         </table>
       </div>
